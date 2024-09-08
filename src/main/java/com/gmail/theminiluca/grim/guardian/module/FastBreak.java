@@ -48,6 +48,7 @@ import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
@@ -173,6 +174,9 @@ public class FastBreak implements PacketListener, Listener {
                 final Block targetBlock = player.getWorld().getBlockAt(vector3i.getX(), vector3i.getY(), vector3i.getZ());
                 final BlockPos blockPos = ((CraftBlock) targetBlock).getPosition();
                 event.setCancelled(true);
+                if (!serverPlayer.canInteractWithBlock(blockPos, 0.0D)) {
+                    return;
+                }
                 if (runnable.containsKey(user.getUUID())) {
                     stopRunnable(user, digging);
                 }
@@ -252,7 +256,9 @@ public class FastBreak implements PacketListener, Listener {
                                         , blockPos,
                                         net.minecraft.world.level.block.Block.getId(iblockdata));
                             }
+
                             player.breakBlock(block);
+
                         }
                     }
                 }.runTaskTimer(GrimGuardian.getInstance(), 1L, 1L).getTaskId());
@@ -263,10 +269,6 @@ public class FastBreak implements PacketListener, Listener {
         }
     }
 
-    @EventHandler
-    public void onBreakBlock(BlockBreakEvent event) {
-
-    }
 
     public Number getAttributeTools(ItemStack itemStack, boolean flag) {
         float speedMultiplier = 1.0f;

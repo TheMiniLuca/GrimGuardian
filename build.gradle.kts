@@ -55,5 +55,16 @@ tasks {
     }
 }
 
+tasks.named<Copy>("processResources") {
+    val props = mapOf("version" to project.version.toString())
+    inputs.properties(props)
+    filteringCharset = "UTF-8"
+    filesMatching("plugin.yml") {
+        expand(props)
+    }
+}
+
+
+
 // Configure plugin.yml generation
 // - name, version, and description are inherited from the Gradle project.

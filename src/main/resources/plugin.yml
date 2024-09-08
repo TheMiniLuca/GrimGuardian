@@ -1,5 +1,5 @@
 name: GrimGuardian
-version: '${project.version}'
+version: '${version}'
 main: com.gmail.theminiluca.grim.guardian.GrimGuardian
 api-version: 1.20
 depend:
