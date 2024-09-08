@@ -1,7 +1,0 @@
-name: GrimGuardian
-version: 1.0.0-SNAPSHOT
-main: com.gmail.theminiluca.grim.guardian.GrimGuardian
-api-version: 1.20
-depend:
-  - packetevents
-  - GrimAC
