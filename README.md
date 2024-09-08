@@ -11,3 +11,5 @@ Currently, Minecraft's block-breaking system operates on the client side. While 
 To address this issue, the block-breaking system will be switched from client-side operation to server-side operation. This process ensures that bypassing from the client side is absolutely impossible, thereby completely blocking FastBreak and similar cheats. The system will function exactly the same as in vanilla Minecraft.
 
 [Watch this video](https://youtu.be/NTJbgVO5fSw?si=TqBT-qnuaLHNZG9W&t=5)
+
+<span style="color: red;">This plugin has only been verified through basic testing and may not be compatible with other plugins. If you encounter any bugs or have suggestions, please open an issue on GitHub.</span>
