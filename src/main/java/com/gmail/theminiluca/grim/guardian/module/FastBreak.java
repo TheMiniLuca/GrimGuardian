@@ -210,8 +210,7 @@ public class FastBreak implements PacketListener, Listener {
                             return;
                         }
                         byte progress = (byte) ((workingTime / ((((float) breakTime) + 6.0F))) * 10);
-                        BlockDamageEvent blockDamageEvent = new BlockDamageEvent(player, block, BlockFace.valueOf(digging.getBlockFace().name())
-                                , player.getInventory().getItemInMainHand(), breakTime == -1.0F);
+                        BlockDamageEvent blockDamageEvent = new BlockDamageEvent(player, block, player.getInventory().getItemInMainHand(), breakTime == -1.0F);
                         Bukkit.getServer().getPluginManager().callEvent(blockDamageEvent);
                         if (!blockDamageEvent.isCancelled())
                             if (backProgress != progress) {
