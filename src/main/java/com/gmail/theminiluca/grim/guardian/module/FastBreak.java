@@ -1,6 +1,5 @@
 package com.gmail.theminiluca.grim.guardian.module;
 
-import ac.grim.grimac.GrimAC;
 import ac.grim.grimac.GrimAPI;
 import ac.grim.grimac.player.GrimPlayer;
 import ac.grim.grimac.shaded.com.github.retrooper.packetevents.protocol.item.enchantment.type.EnchantmentTypes;
@@ -28,23 +27,29 @@ import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerBl
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerUpdateAttributes;
 import com.gmail.theminiluca.grim.guardian.GrimGuardian;
 import io.github.retrooper.packetevents.util.SpigotConversionUtil;
-import io.papermc.paper.event.block.BlockBreakBlockEvent;
-import net.minecraft.core.BlockPosition;
-import net.minecraft.network.protocol.game.PacketPlayInBlockDig;
-import net.minecraft.network.protocol.game.PacketPlayOutBlockBreakAnimation;
-import net.minecraft.server.level.EntityPlayer;
-import net.minecraft.world.entity.player.EntityHuman;
-import org.bukkit.*;
+import net.kyori.adventure.text.Component;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.level.block.state.BlockState;
+import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
+import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.craftbukkit.v1_21_R1.entity.CraftPlayer;
+import org.bukkit.craftbukkit.CraftWorld;
+import org.bukkit.craftbukkit.block.CraftBlock;
+import org.bukkit.craftbukkit.entity.CraftPlayer;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockDamageAbortEvent;
 import org.bukkit.event.block.BlockDamageEvent;
@@ -54,9 +59,9 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.logging.Logger;
 
 public class FastBreak implements PacketListener, Listener {
 
@@ -107,23 +112,41 @@ public class FastBreak implements PacketListener, Listener {
         }
     }
 
-    public void breakNaturally(Player player) {
 
-    }
-
-    @Override
-    public void onPacketSend(PacketSendEvent event) {
-        if (event.getPacketType() instanceof PacketType.Play.Server) {
-            System.out.println(event.getPacketType().getName());
+    public static class BlockBreakSpeedCancelled implements PacketListener {
+        @Override
+        public void onPacketSend(PacketSendEvent event) {
+            User user = event.getUser();
+            if (user.getUUID() == null) return;
+            Player player = Bukkit.getPlayer(user.getUUID());
+            if (player == null) {
+                return;
+            }
+            if (event.getPacketType().equals(PacketType.Play.Server.UPDATE_ATTRIBUTES)) {
+                if (event.isCancelled()) {
+                    GrimGuardian.getInstance().getLogger().severe("I'm not sure which plugin is responsible, " +
+                            "but canceling the event causes the FastBreak module to malfunction and not work properly.");
+                    GrimGuardian.getInstance().getLogger().severe("It was applied forcefully.");
+                }
+                WrapperPlayServerUpdateAttributes packet = new WrapperPlayServerUpdateAttributes(event);
+                if (user.getEntityId() != packet.getEntityId()) return;
+                int i = 0;
+                Iterator<WrapperPlayServerUpdateAttributes.Property> iterator = packet.getProperties().iterator();
+                while (iterator.hasNext()) {
+                    WrapperPlayServerUpdateAttributes.Property attributes = iterator.next();
+                    if (!Attributes.PLAYER_BLOCK_BREAK_SPEED.equals(attributes.getAttribute())) continue;
+                    GrimPlayer grimPlayer = GrimAPI.INSTANCE.getPlayerDataManager().getPlayer(player);
+                    if (grimPlayer.compensatedEntities.getSelf().getAttributeValue(ac.grim.grimac.shaded.com.github.retrooper.packetevents.protocol.attribute.Attributes.PLAYER_BLOCK_BREAK_SPEED) == 0.0F) {
+                        iterator.remove();  // 안전하게 리스트에서 요소 제거
+                        continue;
+                    }
+                    attributes.setValue(0.0F);
+                }
+                if (packet.getProperties().isEmpty()) {
+                    event.setCancelled(true);
+                }
+            }
         }
-    }
-
-    @EventHandler
-    public void onPlayerInteract(PlayerJoinEvent event) {
-        Player player = event.getPlayer();
-        User user = PacketEvents.getAPI().getProtocolManager().getUser(player.getUniqueId());
-        user.sendPacket(new WrapperPlayServerUpdateAttributes(user.getEntityId(), List.of(new WrapperPlayServerUpdateAttributes
-                .Property(Attributes.PLAYER_BLOCK_BREAK_SPEED, 0.0D, new ArrayList<>()))));
     }
 
     @Override
@@ -139,19 +162,20 @@ public class FastBreak implements PacketListener, Listener {
             if (instance == null) {
                 return;
             }
-            user.sendPacket(new WrapperPlayServerUpdateAttributes(user.getEntityId(), List.of(new WrapperPlayServerUpdateAttributes
-                    .Property(Attributes.PLAYER_BLOCK_BREAK_SPEED, 0.0D, new ArrayList<>()))));
             if (player.getGameMode().equals(GameMode.CREATIVE)) return;
             if (action.equals(DiggingAction.RELEASE_USE_ITEM)) return;
             if (action.equals(DiggingAction.DROP_ITEM)) return;
             if (action.equals(DiggingAction.DROP_ITEM_STACK)) return;
             if (action.equals(DiggingAction.SWAP_ITEM_WITH_OFFHAND)) return;
             if (action.equals(DiggingAction.START_DIGGING)) {
+                final ServerPlayer serverPlayer = ((CraftPlayer) player).getHandle();
+                final Vector3i vector3i = digging.getBlockPosition();
+                final Block targetBlock = player.getWorld().getBlockAt(vector3i.getX(), vector3i.getY(), vector3i.getZ());
+                final BlockPos blockPos = ((CraftBlock) targetBlock).getPosition();
                 event.setCancelled(true);
                 if (runnable.containsKey(user.getUUID())) {
                     stopRunnable(user, digging);
                 }
-                Vector3i vector3i = digging.getBlockPosition();
                 Block defaultBlock = player.getWorld().getBlockAt(vector3i.getX(), vector3i.getY(), vector3i.getZ());
                 org.bukkit.inventory.ItemStack itemStack = player.getInventory().getItemInMainHand();
                 ItemStack tools = SpigotConversionUtil.fromBukkitItemStack(itemStack);
@@ -168,7 +192,7 @@ public class FastBreak implements PacketListener, Listener {
                             return;
                         }
                         Block block = player.getWorld().getBlockAt(vector3i.getX(), vector3i.getY(), vector3i.getZ());
-                        if (!player.isOnline()) {
+                        if (!player.isOnline() || !grimPlayer.bukkitPlayer.isOnline()) {
                             stopRunnable(user, digging);
                             this.cancel();
                             return;
@@ -215,14 +239,20 @@ public class FastBreak implements PacketListener, Listener {
                         if (!blockDamageEvent.isCancelled()) workingTime += Math.max(worktime, 0);
                         backProgress = progress;
 
-                        if ((progress >= 10 || breakTime == -1.0F) && !blockDamageEvent.isCancelled()) {
+                        if ((progress >= 10 || blockDamageEvent.getInstaBreak()) && !blockDamageEvent.isCancelled()) {
                             this.cancel();
                             stopDigging(user, digging.getBlockPosition());
-                            EntityPlayer entityPlayer = ((CraftPlayer) player).getHandle();
-                            PacketPlayInBlockDig
-                            entityPlayer.e.a(new BlockPosition(vector3i.getX(), vector3i.getY(), vector3i.getZ()), );
-
-                            entityPlayer.e.a(new BlockPosition(vector3i.getX(), vector3i.getY(), vector3i.getZ()));
+                            ServerLevel world = ((CraftWorld) player.getWorld()).getHandle();
+                            BlockState iblockdata = ((CraftBlock) block).getNMS();
+                            BlockPos blockPos = ((CraftBlock) block).getPosition();
+                            if (iblockdata.getBlock() instanceof net.minecraft.world.level.block.BaseFireBlock) {
+                                world.levelEvent(net.minecraft.world.level.block.LevelEvent.SOUND_EXTINGUISH_FIRE, blockPos, 0);
+                            } else {
+                                world.levelEvent(net.minecraft.world.level.block.LevelEvent.PARTICLES_DESTROY_BLOCK
+                                        , blockPos,
+                                        net.minecraft.world.level.block.Block.getId(iblockdata));
+                            }
+                            player.breakBlock(block);
                         }
                     }
                 }.runTaskTimer(GrimGuardian.getInstance(), 1L, 1L).getTaskId());
@@ -231,6 +261,11 @@ public class FastBreak implements PacketListener, Listener {
                 event.setCancelled(true);
             }
         }
+    }
+
+    @EventHandler
+    public void onBreakBlock(BlockBreakEvent event) {
+
     }
 
     public Number getAttributeTools(ItemStack itemStack, boolean flag) {
