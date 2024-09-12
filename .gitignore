@@ -4,6 +4,7 @@ target/
 !**/src/test/**/target/
 .idea
 out
+run/
 .gradle
 ### IntelliJ IDEA ###
 .idea/modules.xml

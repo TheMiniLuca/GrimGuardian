@@ -47,6 +47,7 @@ import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -56,16 +57,20 @@ import org.bukkit.event.block.BlockDamageAbortEvent;
 import org.bukkit.event.block.BlockDamageEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.util.Vector;
 
 import java.util.*;
 import java.util.logging.Logger;
 
 public class FastBreak implements PacketListener, Listener {
 
+
+    public static boolean DISABLE = false;
     public static final Map<UUID, Integer> runnable = new HashMap<>();
 
     public void stopDigging(User user, Vector3i vector3i) {
@@ -93,23 +98,20 @@ public class FastBreak implements PacketListener, Listener {
 
 
     public void destroyBlockProgress(Player breakPlayer, World world, Vector3i blockposition, int progress) {
-
         for (User user : PacketEvents.getAPI().getProtocolManager().getUsers()) {
             if (user.getUUID() == null) continue;
             Player player = Bukkit.getPlayer(user.getUUID());
-            if (player != null && player.getWorld() == world) {
-                double d0 = (double) blockposition.getX() - player.getLocation().getX();
-                double d1 = (double) blockposition.getY() - player.getLocation().getY();
-                double d2 = (double) blockposition.getZ() - player.getLocation().getZ();
+            if (player == null || player.getWorld() != world) continue;
 
-                if (breakPlayer != null && !player.canSee(breakPlayer)) {
-                    continue;
-                }
-                if (d0 * d0 + d1 * d1 + d2 * d2 < 1024.0D) {
-                    user.sendPacket(new WrapperPlayServerBlockBreakAnimation(user.hashCode() >> 5
-                            , blockposition, (byte) progress));
-                }
-            }
+            double d0 = blockposition.getX() - player.getLocation().getX();
+            double d1 = blockposition.getY() - player.getLocation().getY();
+            double d2 = blockposition.getZ() - player.getLocation().getZ();
+            double distanceSquared = d0 * d0 + d1 * d1 + d2 * d2;
+
+            if (distanceSquared >= 1024.0D) continue;
+            if (breakPlayer != null && !player.canSee(breakPlayer)) continue;
+
+            user.sendPacket(new WrapperPlayServerBlockBreakAnimation(user.hashCode() >> 5, blockposition, (byte) progress));
         }
     }
 
@@ -118,6 +120,7 @@ public class FastBreak implements PacketListener, Listener {
         @Override
         public void onPacketSend(PacketSendEvent event) {
             User user = event.getUser();
+            if (DISABLE) return;
             if (user.getUUID() == null) return;
             Player player = Bukkit.getPlayer(user.getUUID());
             if (player == null) {
@@ -150,40 +153,41 @@ public class FastBreak implements PacketListener, Listener {
         }
     }
 
+    long ms = -1;
+
     @Override
     public void onPacketReceive(PacketReceiveEvent event) {
         User user = event.getUser();
 
         if (event.getPacketType().equals(PacketType.Play.Client.PLAYER_DIGGING)) {
+            if (DISABLE) return;
             Player player = (Player) event.getPlayer();
             WrapperPlayClientPlayerDigging digging = new WrapperPlayClientPlayerDigging(event);
             if (event.isCancelled()) return;
             DiggingAction action = digging.getAction();
-            AttributeInstance instance = player.getAttribute(Attribute.PLAYER_BLOCK_INTERACTION_RANGE);
-            if (instance == null) {
+            if (player.getGameMode().equals(GameMode.CREATIVE)) return;
+            if (action.equals(DiggingAction.RELEASE_USE_ITEM) || action.equals(DiggingAction.DROP_ITEM) || action.equals(DiggingAction.DROP_ITEM_STACK) || action.equals(DiggingAction.SWAP_ITEM_WITH_OFFHAND)) {
                 return;
             }
-            if (player.getGameMode().equals(GameMode.CREATIVE)) return;
-            if (action.equals(DiggingAction.RELEASE_USE_ITEM)) return;
-            if (action.equals(DiggingAction.DROP_ITEM)) return;
-            if (action.equals(DiggingAction.DROP_ITEM_STACK)) return;
-            if (action.equals(DiggingAction.SWAP_ITEM_WITH_OFFHAND)) return;
             if (action.equals(DiggingAction.START_DIGGING)) {
                 final ServerPlayer serverPlayer = ((CraftPlayer) player).getHandle();
                 final Vector3i vector3i = digging.getBlockPosition();
                 final Block targetBlock = player.getWorld().getBlockAt(vector3i.getX(), vector3i.getY(), vector3i.getZ());
                 final BlockPos blockPos = ((CraftBlock) targetBlock).getPosition();
                 event.setCancelled(true);
-                if (!serverPlayer.canInteractWithBlock(blockPos, 0.0D)) {
-                    return;
-                }
                 if (runnable.containsKey(user.getUUID())) {
                     stopRunnable(user, digging);
                 }
-                Block defaultBlock = player.getWorld().getBlockAt(vector3i.getX(), vector3i.getY(), vector3i.getZ());
                 org.bukkit.inventory.ItemStack itemStack = player.getInventory().getItemInMainHand();
                 ItemStack tools = SpigotConversionUtil.fromBukkitItemStack(itemStack);
-                final int breakTime = getDefaultBreakTick(player, defaultBlock, tools);
+                final int breakTime = getDefaultBreakTick(player, targetBlock, tools);
+                PlayerInteractEvent interactEvent = new PlayerInteractEvent(player, Action.LEFT_CLICK_BLOCK, itemStack, targetBlock
+                        , BlockFace.valueOf(digging.getBlockFace().name())
+                        , EquipmentSlot.HAND, new Vector(blockPos.getX(), blockPos.getY(), blockPos.getZ()));
+                interactEvent.setUseInteractedBlock(serverPlayer.canInteractWithBlock(blockPos, 0.0D) ? Event.Result.ALLOW: Event.Result.DENY);
+                if (interactEvent.useInteractedBlock() == Event.Result.DENY) {
+                    return;
+                }
                 GrimPlayer grimPlayer = GrimAPI.INSTANCE.getPlayerDataManager().getPlayer(player);
                 runnable.put(user.getUUID(), new BukkitRunnable() {
                     float workingTime = 0;
@@ -260,7 +264,7 @@ public class FastBreak implements PacketListener, Listener {
 
                         }
                     }
-                }.runTaskTimer(GrimGuardian.getInstance(), 1L, 1L).getTaskId());
+                }.runTaskTimer(GrimGuardian.getInstance(), 0L, 1L).getTaskId());
             } else {
                 stopRunnable(user, digging);
                 event.setCancelled(true);
@@ -311,6 +315,7 @@ public class FastBreak implements PacketListener, Listener {
         } else if (itemStack.getType().hasAttribute(ItemTypes.ItemAttribute.HOE)) {
             isCorrectToolForDrop = BlockTags.MINEABLE_HOE.contains(blockState.getType());
         }
+
         if (isCorrectToolForDrop) {
             int tier = getAttributeTools(itemStack, false).intValue();
             speedMultiplier = getAttributeTools(itemStack, true).floatValue();

@@ -1,10 +1,12 @@
 plugins {
     `java-library`
     id("io.papermc.paperweight.userdev") version "1.7.2"
+    id("xyz.jpenilla.run-paper") version "2.3.0"
+
 }
 
 group = "com.gmail.theminiluca.grim.guardian"
-version = "1.0.0-SNAPSHOT"
+version = "1.0.1-SNAPSHOT"
 description = "GrimGuardian"
 
 java {
@@ -24,6 +26,8 @@ tasks.assemble {
   dependsOn(tasks.reobfJar)
 }
  */
+
+
 repositories {
     mavenLocal()
     maven("https://repo.codemc.io/repository/maven-releases/")
@@ -47,6 +51,9 @@ tasks {
         options.encoding = Charsets.UTF_8.name() // We want UTF-8 for everything
     }
 
+    runServer {
+        minecraftVersion("1.21.1")
+    }
     // Only relevant when going with option 2 above
     reobfJar {
       // This is an example of how you might change the output location for reobfJar. It's recommended not to do this
