@@ -2,7 +2,7 @@ plugins {
     `java-library`
     id("io.papermc.paperweight.userdev") version "1.7.2"
     id("xyz.jpenilla.run-paper") version "2.3.0"
-
+    id("com.gradleup.shadow") version "8.3.2"
 }
 
 group = "com.gmail.theminiluca.grim.guardian"
@@ -35,11 +35,13 @@ repositories {
 
 dependencies {
     paperweight.paperDevBundle("1.21.1-R0.1-SNAPSHOT")
-    compileOnly("com.github.retrooper:packetevents-spigot:2.4.0")
+    compileOnly("com.github.retrooper:packetevents-spigot:2.5.0")
     compileOnly("ac.grim.grimac:grimac:2.3.67")
+    implementation("net.objecthunter:exp4j:0.4.8")
     // paperweight.foliaDevBundle("1.21-R0.1-SNAPSHOT")
     // paperweight.devBundle("com.example.paperfork", "1.21-R0.1-SNAPSHOT")
 }
+
 
 tasks {
     compileJava {
@@ -54,6 +56,7 @@ tasks {
     runServer {
         minecraftVersion("1.21.1")
     }
+
     // Only relevant when going with option 2 above
     reobfJar {
       // This is an example of how you might change the output location for reobfJar. It's recommended not to do this

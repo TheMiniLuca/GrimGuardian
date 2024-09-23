@@ -1,0 +1,11 @@
+block-break-controller:
+  efficiency:
+    equation: eff ^ 2 + 1
+  haste:
+    equation: 1 + (max(haste, conduit_power) * 0.2)
+  mining_fatigue:
+    equation: 0.3 ^ min(fatigue, 4)
+  instant:
+    condition: (tools + fun_efficiency(eff)) * fun_haste(haste, conduit_power) >= hardness * 30
+  tools:
+
