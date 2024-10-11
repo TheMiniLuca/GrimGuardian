@@ -1,3 +1,4 @@
+# https://minecraft.wiki/w/Breaking
 block-break-controller:
   efficiency:
     equation: eff ^ 2 + 1
@@ -8,4 +9,35 @@ block-break-controller:
   instant:
     condition: (tools + fun_efficiency(eff)) * fun_haste(haste, conduit_power) >= hardness * 30
   tools:
-
+    harvest:
+      correct: 30
+      incorrect: 100
+    wood:
+      multiplier: 2.0
+    stone:
+      multiplier: 4.0
+    iron:
+      multiplier: 6.0
+    diamond:
+      multiplier: 8.0
+    netherite:
+      multiplier: 9.0
+    gold:
+      multiplier: 12.0
+    shears:
+      cobweb_or_leaves:
+        multiplier: 15.0
+        is_correct_tool: true
+      wool:
+        multiplier: 5.0
+        is_correct_tool: true
+      vine_or_glow_lichen:
+        multiplier: 2.0
+        is_correct_tool: true
+    sword:
+      cobweb:
+        multiplier: 15.0
+        is_correct_tool: true
+      pumpkin_or_melon:
+        multiplier: 1.5
+        is_correct_tool: true

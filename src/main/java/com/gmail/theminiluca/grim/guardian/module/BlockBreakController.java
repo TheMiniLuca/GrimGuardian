@@ -2,6 +2,7 @@ package com.gmail.theminiluca.grim.guardian.module;
 
 import ac.grim.grimac.GrimAPI;
 import ac.grim.grimac.player.GrimPlayer;
+import ac.grim.grimac.shaded.com.github.retrooper.packetevents.protocol.component.ComponentTypes;
 import ac.grim.grimac.shaded.com.github.retrooper.packetevents.protocol.item.enchantment.type.EnchantmentTypes;
 import ac.grim.grimac.shaded.com.github.retrooper.packetevents.protocol.player.ClientVersion;
 import ac.grim.grimac.shaded.com.github.retrooper.packetevents.protocol.potion.PotionTypes;
@@ -13,15 +14,17 @@ import com.github.retrooper.packetevents.event.PacketReceiveEvent;
 import com.github.retrooper.packetevents.event.PacketSendEvent;
 import com.github.retrooper.packetevents.manager.server.ServerVersion;
 import com.github.retrooper.packetevents.protocol.attribute.Attributes;
-import com.github.retrooper.packetevents.protocol.component.ComponentTypes;
+import com.github.retrooper.packetevents.protocol.component.builtin.item.ItemTool;
 import com.github.retrooper.packetevents.protocol.item.ItemStack;
 import com.github.retrooper.packetevents.protocol.item.type.ItemTypes;
+import com.github.retrooper.packetevents.protocol.mapper.MappedEntitySet;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.protocol.player.DiggingAction;
 import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.protocol.world.MaterialType;
 import com.github.retrooper.packetevents.protocol.world.states.WrappedBlockState;
 import com.github.retrooper.packetevents.protocol.world.states.defaulttags.BlockTags;
+import com.github.retrooper.packetevents.protocol.world.states.type.StateType;
 import com.github.retrooper.packetevents.protocol.world.states.type.StateTypes;
 import com.github.retrooper.packetevents.util.Vector3i;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerDigging;
@@ -55,10 +58,14 @@ import org.bukkit.event.block.BlockDamageAbortEvent;
 import org.bukkit.event.block.BlockDamageEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.components.ToolComponent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -198,7 +205,7 @@ public class BlockBreakController implements PacketListener, Listener {
                     if (interactEvent.useInteractedBlock() == Event.Result.DENY) {
                         return;
                     }
-                    GrimPlayer grimPlayer = GrimAPI.INSTANCE.getPlayerDataManager().getPlayer(player);
+                    @NotNull GrimPlayer grimPlayer = GrimAPI.INSTANCE.getPlayerDataManager().getPlayer(player);
 //                    ms.put(player.getUniqueId(), System.currentTimeMillis());
                     runnable.put(user.getUUID(), new BukkitRunnable() {
                         float workingTime = 0;
@@ -259,17 +266,16 @@ public class BlockBreakController implements PacketListener, Listener {
                                 }
                                 stopDigging(user, digging.getBlockPosition());
                                 ServerLevel world = ((CraftWorld) player.getWorld()).getHandle();
-                                BlockState iblockdata = ((CraftBlock) block).getNMS();
+                                BlockState blockState = ((CraftBlock) block).getNMS();
                                 BlockPos blockPos = ((CraftBlock) block).getPosition();
-                                if (iblockdata.getBlock() instanceof net.minecraft.world.level.block.BaseFireBlock) {
+                                if (blockState.getBlock() instanceof net.minecraft.world.level.block.BaseFireBlock) {
                                     world.levelEvent(net.minecraft.world.level.block.LevelEvent.SOUND_EXTINGUISH_FIRE, blockPos, 0);
                                 } else {
                                     world.levelEvent(net.minecraft.world.level.block.LevelEvent.PARTICLES_DESTROY_BLOCK
                                             , blockPos,
-                                            net.minecraft.world.level.block.Block.getId(iblockdata));
+                                            net.minecraft.world.level.block.Block.getId(blockState));
                                 }
                                 player.breakBlock(block);
-//                                player.sendMessage(m + "ms ( %d tick )".formatted(m / 50));
                             }
                         }
                     }.runTaskTimer(GrimGuardian.getInstance(), 0L, 1L).getTaskId());
@@ -286,20 +292,20 @@ public class BlockBreakController implements PacketListener, Listener {
         float speedMultiplier = 1.0f;
         int tier = 0;
         if (itemStack.getType().hasAttribute(ItemTypes.ItemAttribute.WOOD_TIER)) { // Tier 0
-            speedMultiplier = 2.0f;
+            speedMultiplier = (float) ConfigManager.getInstance().getDouble(ConfigHandler.WOOD_MULTIPLIER);
         } else if (itemStack.getType().hasAttribute(ItemTypes.ItemAttribute.STONE_TIER)) { // Tier 1
-            speedMultiplier = 4.0f;
+            speedMultiplier = (float) ConfigManager.getInstance().getDouble(ConfigHandler.STONE_MULTIPLIER);
             tier = 1;
         } else if (itemStack.getType().hasAttribute(ItemTypes.ItemAttribute.IRON_TIER)) { // Tier 2
-            speedMultiplier = 6.0f;
+            speedMultiplier = (float) ConfigManager.getInstance().getDouble(ConfigHandler.IRON_MULTIPLIER);
             tier = 2;
         } else if (itemStack.getType().hasAttribute(ItemTypes.ItemAttribute.DIAMOND_TIER)) { // Tier 3
-            speedMultiplier = 8.0f;
+            speedMultiplier = (float) ConfigManager.getInstance().getDouble(ConfigHandler.DIAMOND_MULTIPLIER);
             tier = 3;
         } else if (itemStack.getType().hasAttribute(ItemTypes.ItemAttribute.GOLD_TIER)) { // Tier 0
-            speedMultiplier = 12.0f;
+            speedMultiplier = (float) ConfigManager.getInstance().getDouble(ConfigHandler.GOLD_MULTIPLIER);
         } else if (itemStack.getType().hasAttribute(ItemTypes.ItemAttribute.NETHERITE_TIER)) { // Tier 4
-            speedMultiplier = 9.0f;
+            speedMultiplier = (float) ConfigManager.getInstance().getDouble(ConfigHandler.NETHERITE_MULTIPLIER);
             tier = 4;
         }
         return flag ? speedMultiplier : tier;
@@ -309,20 +315,20 @@ public class BlockBreakController implements PacketListener, Listener {
         float speedMultiplier = 1.0f;
         int tier = 0;
         if (itemStack.getType().hasAttribute(ac.grim.grimac.shaded.com.github.retrooper.packetevents.protocol.item.type.ItemTypes.ItemAttribute.WOOD_TIER)) { // Tier 0
-            speedMultiplier = 2.0f;
+            speedMultiplier = (float) ConfigManager.getInstance().getDouble(ConfigHandler.WOOD_MULTIPLIER);
         } else if (itemStack.getType().hasAttribute(ac.grim.grimac.shaded.com.github.retrooper.packetevents.protocol.item.type.ItemTypes.ItemAttribute.STONE_TIER)) { // Tier 1
-            speedMultiplier = 4.0f;
+            speedMultiplier = (float) ConfigManager.getInstance().getDouble(ConfigHandler.STONE_MULTIPLIER);
             tier = 1;
         } else if (itemStack.getType().hasAttribute(ac.grim.grimac.shaded.com.github.retrooper.packetevents.protocol.item.type.ItemTypes.ItemAttribute.IRON_TIER)) { // Tier 2
-            speedMultiplier = 6.0f;
+            speedMultiplier = (float) ConfigManager.getInstance().getDouble(ConfigHandler.IRON_MULTIPLIER);
             tier = 2;
         } else if (itemStack.getType().hasAttribute(ac.grim.grimac.shaded.com.github.retrooper.packetevents.protocol.item.type.ItemTypes.ItemAttribute.DIAMOND_TIER)) { // Tier 3
-            speedMultiplier = 8.0f;
+            speedMultiplier = (float) ConfigManager.getInstance().getDouble(ConfigHandler.DIAMOND_MULTIPLIER);
             tier = 3;
         } else if (itemStack.getType().hasAttribute(ac.grim.grimac.shaded.com.github.retrooper.packetevents.protocol.item.type.ItemTypes.ItemAttribute.GOLD_TIER)) { // Tier 0
-            speedMultiplier = 12.0f;
+            speedMultiplier = (float) ConfigManager.getInstance().getDouble(ConfigHandler.GOLD_MULTIPLIER);
         } else if (itemStack.getType().hasAttribute(ac.grim.grimac.shaded.com.github.retrooper.packetevents.protocol.item.type.ItemTypes.ItemAttribute.NETHERITE_TIER)) { // Tier 4
-            speedMultiplier = 9.0f;
+            speedMultiplier = (float) ConfigManager.getInstance().getDouble(ConfigHandler.NETHERITE_MULTIPLIER);
             tier = 4;
         }
         return flag ? speedMultiplier : tier;
@@ -338,6 +344,7 @@ public class BlockBreakController implements PacketListener, Listener {
         float hardness = block.getType().getHardness();
 
         // 1.13 and below need their own huge methods to support this...
+
         if (itemStack.getType().hasAttribute(ItemTypes.ItemAttribute.AXE)) {
             isCorrectToolForDrop = BlockTags.MINEABLE_AXE.contains(blockState.getType());
         } else if (itemStack.getType().hasAttribute(ItemTypes.ItemAttribute.PICKAXE)) {
@@ -347,8 +354,6 @@ public class BlockBreakController implements PacketListener, Listener {
         } else if (itemStack.getType().hasAttribute(ItemTypes.ItemAttribute.HOE)) {
             isCorrectToolForDrop = BlockTags.MINEABLE_HOE.contains(blockState.getType());
         }
-
-
         if (isCorrectToolForDrop) {
             int tier = getAttributeTools(itemStack, false).intValue();
             speedMultiplier = getAttributeTools(itemStack, true).floatValue();
@@ -361,38 +366,61 @@ public class BlockBreakController implements PacketListener, Listener {
             }
         }
 
+
         // Shears can mine some blocks faster
         if (itemStack.getType() == ItemTypes.SHEARS) {
-            isCorrectToolForDrop = true;
-
             if (blockState.getType() == StateTypes.COBWEB || BlockTags.LEAVES.contains(blockState.getType())) {
-                speedMultiplier = 15.0f;
+                speedMultiplier = (float) ConfigManager.getInstance().getDouble(ConfigHandler.SHEARS_COBWEB_OR_LEAVES_MULTIPLIER);
+                isCorrectToolForDrop = ConfigManager.getInstance().getBoolean(ConfigHandler.SHEARS_COBWEB_OR_LEAVES_CORRECT);
             } else if (BlockTags.WOOL.contains(blockState.getType())) {
-                speedMultiplier = 5.0f;
+                speedMultiplier = (float) ConfigManager.getInstance().getDouble(ConfigHandler.SHEARS_WOOL_MULTIPLIER);
+                isCorrectToolForDrop = ConfigManager.getInstance().getBoolean(ConfigHandler.SHEARS_WOOL_CORRECT);
             } else if (blockState.getType() == StateTypes.VINE ||
                     blockState.getType() == StateTypes.GLOW_LICHEN) {
-                speedMultiplier = 2.0f;
-            } else {
-                isCorrectToolForDrop = blockState.getType() == StateTypes.COBWEB ||
-                        blockState.getType() == StateTypes.REDSTONE_WIRE ||
-                        blockState.getType() == StateTypes.TRIPWIRE;
+                speedMultiplier = (float) ConfigManager.getInstance().getDouble(ConfigHandler.SHEARS_VINE_OR_GLOW_LICHEN_MULTIPLIER);
+                isCorrectToolForDrop = ConfigManager.getInstance().getBoolean(ConfigHandler.SHEARS_VINE_OR_GLOW_LICHEN_CORRECT);
             }
         }
 
         // Swords can also mine some blocks faster
         if (itemStack.getType().hasAttribute(ItemTypes.ItemAttribute.SWORD)) {
             if (blockState.getType() == StateTypes.COBWEB) {
-                speedMultiplier = 15.0f;
+                speedMultiplier = (float) ConfigManager.getInstance().getDouble(ConfigHandler.SWORD_COBWEB_MULTIPLIER);
+                isCorrectToolForDrop = ConfigManager.getInstance().getBoolean(ConfigHandler.SWORD_COBWEB_CORRECT);
             } else if (blockState.getType().getMaterialType() == MaterialType.PLANT ||
                     BlockTags.LEAVES.contains(blockState.getType()) ||
                     blockState.getType() == StateTypes.PUMPKIN ||
                     blockState.getType() == StateTypes.MELON) {
-                speedMultiplier = 1.5f;
+                speedMultiplier = (float) ConfigManager.getInstance().getDouble(ConfigHandler.SWORD_PUMPKIN_OR_MELON_MULTIPLIER);
+                isCorrectToolForDrop = ConfigManager.getInstance().getBoolean(ConfigHandler.SWORD_PUMPKIN_OR_MELON_CORRECT);
             }
 
-            isCorrectToolForDrop = blockState.getType() == StateTypes.COBWEB;
         }
-        GrimPlayer grimPlayer = GrimAPI.INSTANCE.getPlayerDataManager().getPlayer(player);
+
+        @NotNull Optional<com.github.retrooper.packetevents.protocol.component.builtin.item.ItemTool> component =
+                itemStack.getComponent(com.github.retrooper.packetevents.protocol.component.ComponentTypes.TOOL);
+        if (component.isPresent()) {
+            @NotNull com.github.retrooper.packetevents.protocol.component.builtin.item.ItemTool itemTool = component.get();
+            speedMultiplier = itemTool.getDefaultMiningSpeed();
+            loop:
+            for (@NotNull ItemTool.Rule rule : itemTool.getRules()) {
+                @Nullable MappedEntitySet<StateType.Mapped> set = rule.getBlocks();
+                if (set == null) continue;
+                @Nullable List<StateType.Mapped> entities = set.getEntities();
+                if (entities == null || entities.isEmpty()) continue;
+                for (@NotNull StateType.Mapped state : set.getEntities()) {
+                    if (state.getStateType().equals(blockState.getType())) {
+                        @Nullable Float speed = rule.getSpeed();
+                        if (speed == null) {
+                            continue loop;
+                        }
+                        speedMultiplier = speed;
+                        break loop;
+                    }
+                }
+            }
+        }
+        @NotNull final GrimPlayer grimPlayer = GrimAPI.INSTANCE.getPlayerDataManager().getPlayer(player);
         int digSpeed = itemStack.getEnchantmentLevel(com.github.retrooper.packetevents.protocol.item.enchantment.type.EnchantmentTypes.BLOCK_EFFICIENCY, PacketEvents.getAPI().getServerManager().getVersion().toClientVersion());
         if (speedMultiplier > 1.0f) {
             if (grimPlayer.getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_21) && PacketEvents.getAPI().getServerManager().getVersion().isNewerThanOrEquals(ServerVersion.V_1_21)) {
@@ -421,9 +449,9 @@ public class BlockBreakController implements PacketListener, Listener {
             return -1; // instant break
         }
         if (canHarvest) {
-            damage /= 30;
+            damage /= (float) ConfigManager.getInstance().getDouble(ConfigHandler.HARVEST_CORRECT);
         } else {
-            damage /= 100;
+            damage /= (float) ConfigManager.getInstance().getDouble(ConfigHandler.HARVEST_INCORRECT);
         }
 
         return Math.round(1 / damage);

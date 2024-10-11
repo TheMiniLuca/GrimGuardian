@@ -38,6 +38,33 @@ public final class ConfigHandler {
     public static ConfigManager.Option MINING_FATIGUE_EQUATION_PATH = new ConfigManager.Option("block-break-controller.mining_fatigue.equation", String.class);
     public static ConfigManager.Option INSTANT_EQUATION_PATH = new ConfigManager.Option("block-break-controller.instant.condition", String.class);
 
+    public static ConfigManager.Option WOOD_MULTIPLIER = new ConfigManager.Option("block-break-controller.tools.wood.multiplier", Double.class);
+    public static ConfigManager.Option STONE_MULTIPLIER = new ConfigManager.Option("block-break-controller.tools.wood.multiplier", Double.class);
+    public static ConfigManager.Option IRON_MULTIPLIER = new ConfigManager.Option("block-break-controller.tools.wood.multiplier", Double.class);
+    public static ConfigManager.Option DIAMOND_MULTIPLIER = new ConfigManager.Option("block-break-controller.tools.wood.multiplier", Double.class);
+    public static ConfigManager.Option NETHERITE_MULTIPLIER = new ConfigManager.Option("block-break-controller.tools.wood.multiplier", Double.class);
+    public static ConfigManager.Option GOLD_MULTIPLIER = new ConfigManager.Option("block-break-controller.tools.wood.multiplier", Double.class);
+    public static ConfigManager.Option HARVEST_CORRECT = new ConfigManager.Option("block-break-controller.tools.harvest.correct", Double.class);
+    public static ConfigManager.Option HARVEST_INCORRECT = new ConfigManager.Option("block-break-controller.tools.harvest.incorrect", Double.class);
+
+    public static ConfigManager.Option SHEARS_COBWEB_OR_LEAVES_MULTIPLIER = new ConfigManager.Option("block-break-controller.tools.shears.cobweb_or_leaves.multiplier", Double.class);
+    public static ConfigManager.Option SHEARS_COBWEB_OR_LEAVES_CORRECT = new ConfigManager.Option("block-break-controller.tools.shears.cobweb_or_leaves.is_correct_tool", Boolean.class);
+
+    public static ConfigManager.Option SHEARS_WOOL_MULTIPLIER = new ConfigManager.Option("block-break-controller.tools.shears.wool.multiplier", Double.class);
+    public static ConfigManager.Option SHEARS_WOOL_CORRECT = new ConfigManager.Option("block-break-controller.tools.shears.wool.is_correct_tool", Boolean.class);
+
+    public static ConfigManager.Option SHEARS_VINE_OR_GLOW_LICHEN_MULTIPLIER = new ConfigManager.Option("block-break-controller.tools.shears.vine_or_glow_lichen.multiplier", Double.class);
+    public static ConfigManager.Option SHEARS_VINE_OR_GLOW_LICHEN_CORRECT = new ConfigManager.Option("block-break-controller.tools.shears.vine_or_glow_lichen.is_correct_tool", Boolean.class);
+
+    public static ConfigManager.Option SWORD_COBWEB_MULTIPLIER = new ConfigManager.Option("block-break-controller.tools.sword.cobweb.multiplier", Double.class);
+    public static ConfigManager.Option SWORD_COBWEB_CORRECT = new ConfigManager.Option("block-break-controller.tools.sword.cobweb.is_correct_tool", Boolean.class);
+
+    public static ConfigManager.Option SWORD_PUMPKIN_OR_MELON_MULTIPLIER = new ConfigManager.Option("block-break-controller.tools.sword.pumpkin_or_melon.multiplier", Double.class);
+    public static ConfigManager.Option SWORD_PUMPKIN_OR_MELON_CORRECT = new ConfigManager.Option("block-break-controller.tools.sword.pumpkin_or_melon.is_correct_tool", Boolean.class);
+
+
+
+
 
     private static final Function MIN_FUNCTION = new Function("min", 2) {
         @Override
@@ -90,8 +117,6 @@ public final class ConfigHandler {
 
     public Function createFunction(String formula, Set<String> variableNames, String name) {
         List<String> list = sort(formula, variableNames);
-        GrimGuardian.getInstance().getLogger().info(formula + "<--- " + name);
-        GrimGuardian.getInstance().getLogger().info(list.toString() + "<--- " + name);
         return new Function(name, list.size()) {
             @Override
             public double apply(double... doubles) {

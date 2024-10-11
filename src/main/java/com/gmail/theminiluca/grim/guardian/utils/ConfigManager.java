@@ -96,24 +96,26 @@ public class ConfigManager {
         return instance;
     }
 
+
     public String getString(Option e) {
-        return getConfig().getString(e.path);
+        return (String) values.get(e.path);
     }
 
     public boolean getBoolean(Option e) {
-        return getConfig().getBoolean(e.path);
+        return (Boolean) values.get(e.path);
     }
 
     public double getDouble(Option e) {
-        return getConfig().getDouble(e.path);
+        return (Double) values.get(e.path);
     }
 
     public int getInt(Option e) {
-        return getConfig().getInt(e.path);
+        return (Integer) values.get(e.path);
     }
 
+    @SuppressWarnings("unchecked")
     public List<String> getList(Option e) {
-        return getConfig().getStringList(e.path);
+        return (List<String>) values.get(e.path);
     }
 
     public static class Option {

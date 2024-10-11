@@ -58,11 +58,20 @@ public class GrimGuardian extends JavaPlugin implements Listener {
         getCommand("debug").setExecutor(new CommandExecutor() {
             @Override
             public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-                BlockBreakController.DISABLE = !BlockBreakController.DISABLE;
-                commandSender.sendMessage("Fast Break Disabled = " + BlockBreakController.DISABLE);
-                for (Player player : Bukkit.getOnlinePlayers()) {
-                    player.getAttribute(Attribute.PLAYER_BLOCK_BREAK_SPEED).setBaseValue(1.0);
-                }
+//                if (args.length == 0) {
+//
+//                } else {
+//                    switch (args[0]) {
+//                        case "debug" -> {
+////                            BlockBreakController.DISABLE = !BlockBreakController.DISABLE;
+////                            commandSender.sendMessage("Fast Break Disabled = " + BlockBreakController.DISABLE);
+////                            for (Player player : Bukkit.getOnlinePlayers()) {
+////                                player.getAttribute(Attribute.PLAYER_BLOCK_BREAK_SPEED).setBaseValue(1.0);
+////                            }
+////                            return false;
+////                        }
+//                    }
+//                }
                 return false;
             }
         });
