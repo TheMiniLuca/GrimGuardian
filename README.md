@@ -1,5 +1,5 @@
 ## What is GrimGuardian
-GrimGuardian is a plugin that depends on GrimAC to provide or modify additional features. This plugin works only on Bukkit servers based on PaperMC and requires PacketEvents Plugin.
+GrimGuardian is a plugin that converts manipulable client-side actions into server-side actions. It depends on the GrimAC and PacketEvents plugins.
 
    ### The Purpose 
    **GrimGuardian** is to ensure that hackers gain absolutely no advantage.
