@@ -11,6 +11,11 @@ import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerUpdateAttributes;
 import com.gmail.theminiluca.grim.guardian.GrimGuardian;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.World;
+import org.bukkit.block.BlockState;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.entity.Player;
 
 import java.util.Iterator;
@@ -49,6 +54,7 @@ public class AttributeController implements PacketListener {
             if (packet.getProperties().isEmpty()) {
                 event.setCancelled(true);
             }
+
         }
     }
 
