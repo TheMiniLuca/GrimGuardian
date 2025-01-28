@@ -50,6 +50,7 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.block.CraftBlock;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.Listener;
@@ -240,6 +241,7 @@ public class BlockBreakController implements PacketListener, Listener {
                                             net.minecraft.world.level.block.Block.getId(blockState));
                                 }
                                 player.breakBlock(block);
+
                             }
                         }
                     }.runTaskTimer(GrimGuardian.getInstance(), 0L, 1L).getTaskId());

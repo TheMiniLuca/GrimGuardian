@@ -12,6 +12,7 @@ import net.minecraft.world.entity.EntityType;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.BlockData;
@@ -22,6 +23,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
+import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Range;
@@ -82,10 +84,12 @@ public class GrimGuardian extends JavaPlugin implements Listener {
                 }
 //                Block block = player.getLocation().getBlock().getRelative(BlockFace.DOWN);
 //                player.sendMessage(block.getBlockData().getAsString());
-
                 return false;
             }
         });
+        AttributeInstance instance1;
+        instance1.addModifier();
+
     }
 
     private @NotNull BlockFace getBlockFace(@NotNull Location location) {
