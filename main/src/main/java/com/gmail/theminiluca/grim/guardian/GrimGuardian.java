@@ -6,14 +6,12 @@ import com.gmail.theminiluca.grim.guardian.module.AttributeController;
 import com.gmail.theminiluca.grim.guardian.module.BlockBreakController;
 import com.gmail.theminiluca.grim.guardian.utils.ConfigHandler;
 import com.gmail.theminiluca.grim.guardian.utils.ConfigYaml;
+import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.EntityType;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.BlockData;
@@ -22,32 +20,27 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.InvalidConfigurationException;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
-import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Range;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicReference;
 
 //TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
 // click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 public class GrimGuardian extends JavaPlugin implements Listener {
 
 
+    @Getter
     private static GrimGuardian instance;
 
-    public static GrimGuardian getInstance() {
-        return instance;
-    }
 
+    @Getter
     private BlockBreakController blockBreakController;
 
-    public BlockBreakController getBlockBreakController() {
-        return blockBreakController;
-    }
 
     @Override
     public void onLoad() {
@@ -77,6 +70,7 @@ public class GrimGuardian extends JavaPlugin implements Listener {
         } catch (IOException | InvalidConfigurationException e) {
             throw new RuntimeException(e);
         }
+
         getCommand("debug").setExecutor(new CommandExecutor() {
             @Override
             public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String[] strings) {

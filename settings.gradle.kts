@@ -6,6 +6,10 @@
 
 rootProject.name = "GrimGuardian"
 
+plugins {
+    id("org.gradle.toolchains.foojay-resolver-convention") version "0.9.0"
+}
+
 pluginManagement {
     repositories {
         gradlePluginPortal()
@@ -13,4 +17,5 @@ pluginManagement {
     }
 }
 include("main")
-include("v1_21_4")
+include("v1_21_R3")
+include("v1_21_R1")
