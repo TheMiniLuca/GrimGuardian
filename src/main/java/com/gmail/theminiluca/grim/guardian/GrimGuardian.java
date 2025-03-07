@@ -87,8 +87,6 @@ public class GrimGuardian extends JavaPlugin implements Listener {
                 return false;
             }
         });
-        AttributeInstance instance1;
-        instance1.addModifier();
 
     }
 
