@@ -1,11 +1,8 @@
-import xyz.jpenilla.resourcefactory.bukkit.bukkitPluginYaml
-
 plugins {
     `java-library`
-    id("maven-publish")
-    id("io.papermc.paperweight.userdev") version "2.0.0-beta.14"
+    id("io.papermc.paperweight.userdev") version "1.7.2"
     id("xyz.jpenilla.run-paper") version "2.3.0"
-    id("xyz.jpenilla.resource-factory") version "1.2.0"
+    id("com.gradleup.shadow") version "8.3.2"
 }
 
 group = "com.gmail.theminiluca.grim.guardian"
@@ -32,14 +29,12 @@ tasks.assemble {
 
 
 repositories {
-    gradlePluginPortal()
     mavenLocal()
-    mavenCentral()
     maven("https://repo.codemc.io/repository/maven-releases/")
 }
 
 dependencies {
-
+    paperweight.paperDevBundle("1.21.1-R0.1-SNAPSHOT")
     compileOnly("com.github.retrooper:packetevents-spigot:2.5.0")
     compileOnly("ac.grim.grimac:grimac:2.3.67")
     implementation("net.objecthunter:exp4j:0.4.8")
@@ -70,11 +65,16 @@ tasks {
     }
 }
 
-val yaml = bukkitPluginYaml {
-    main = "${group}.${this@Build_gradle.main}"
-    version = project.version.toString()
-    description = project.description
-    val split = minecraftVersion.split(".")
-    apiVersion = split[0] + "." + split[1]
-    depend = listOf("packetevents", "GrimAC")
+tasks.named<Copy>("processResources") {
+    val props = mapOf("version" to project.version.toString())
+    inputs.properties(props)
+    filteringCharset = "UTF-8"
+    filesMatching("plugin.yml") {
+        expand(props)
+    }
 }
+
+
+
+// Configure plugin.yml generation
+// - name, version, and description are inherited from the Gradle project.
