@@ -5,6 +5,7 @@ import com.github.retrooper.packetevents.event.PacketListenerPriority;
 import com.gmail.theminiluca.grim.guardian.module.AttributeController;
 import com.gmail.theminiluca.grim.guardian.module.BlockBreakController;
 import com.gmail.theminiluca.grim.guardian.utils.ConfigHandler;
+import com.gmail.theminiluca.grim.guardian.utils.ConfigYaml;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.minecraft.server.level.ServerPlayer;
@@ -20,6 +21,7 @@ import org.bukkit.block.data.type.Chest;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
@@ -27,6 +29,8 @@ import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Range;
+
+import java.io.IOException;
 
 //TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
 // click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
@@ -68,6 +72,11 @@ public class GrimGuardian extends JavaPlugin implements Listener {
                 Bukkit.getConsoleSender().sendMessage(Component.text("https://www.spigotmc.org/resources/grimguardian.119483/"));
             }
         });
+        try {
+            new ConfigYaml().load();
+        } catch (IOException | InvalidConfigurationException e) {
+            throw new RuntimeException(e);
+        }
         getCommand("debug").setExecutor(new CommandExecutor() {
             @Override
             public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String[] strings) {

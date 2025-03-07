@@ -1,5 +1,6 @@
 plugins {
     `java-library`
+    id("maven-publish")
     id("io.papermc.paperweight.userdev") version "1.7.2"
     id("xyz.jpenilla.run-paper") version "2.3.0"
     id("com.gradleup.shadow") version "8.3.2"
