@@ -2,7 +2,6 @@ package com.gmail.theminiluca.grim.guardian.utils;
 
 import com.gmail.theminiluca.grim.guardian.GrimGuardian;
 import org.bukkit.configuration.InvalidConfigurationException;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;

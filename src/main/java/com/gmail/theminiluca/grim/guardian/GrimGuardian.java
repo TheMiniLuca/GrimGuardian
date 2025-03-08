@@ -2,16 +2,21 @@ package com.gmail.theminiluca.grim.guardian;
 
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.event.PacketListenerPriority;
+import com.gmail.theminiluca.grim.guardian.hook.PaperHooks;
+import com.gmail.theminiluca.grim.guardian.hook.ServerLevel;
+import com.gmail.theminiluca.grim.guardian.hook.ServerPlayer;
 import com.gmail.theminiluca.grim.guardian.module.AttributeController;
 import com.gmail.theminiluca.grim.guardian.module.BlockBreakController;
 import com.gmail.theminiluca.grim.guardian.utils.ConfigHandler;
 import com.gmail.theminiluca.grim.guardian.utils.ConfigYaml;
 import lombok.Getter;
+import lombok.Setter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.BlockData;
@@ -27,11 +32,12 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Range;
 
 import java.io.IOException;
-import java.util.concurrent.atomic.AtomicReference;
 
 //TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
 // click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
-public class GrimGuardian extends JavaPlugin implements Listener {
+@Getter
+@Setter
+public class GrimGuardian extends JavaPlugin implements Listener, PaperHooks{
 
 
     @Getter
@@ -40,6 +46,17 @@ public class GrimGuardian extends JavaPlugin implements Listener {
 
     @Getter
     private BlockBreakController blockBreakController;
+
+
+    @Override
+    public ServerPlayer getServerPlayer(@NotNull Player player) {
+        return PaperHooks.get().getServerPlayer(player);
+    }
+
+    @Override
+    public ServerLevel getServerLevel(@NotNull World world) {
+        return PaperHooks.get().getServerLevel(world);
+    }
 
 
     @Override

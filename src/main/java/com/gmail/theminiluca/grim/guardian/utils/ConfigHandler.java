@@ -5,7 +5,6 @@ import ac.grim.grimac.shaded.com.github.retrooper.packetevents.PacketEvents;
 import ac.grim.grimac.shaded.com.github.retrooper.packetevents.protocol.item.enchantment.type.EnchantmentTypes;
 import ac.grim.grimac.shaded.com.github.retrooper.packetevents.protocol.potion.PotionType;
 import ac.grim.grimac.shaded.com.github.retrooper.packetevents.protocol.potion.PotionTypes;
-import com.gmail.theminiluca.grim.guardian.GrimGuardian;
 import com.gmail.theminiluca.grim.guardian.module.BlockBreakController;
 import net.objecthunter.exp4j.ExpressionBuilder;
 import net.objecthunter.exp4j.function.Function;

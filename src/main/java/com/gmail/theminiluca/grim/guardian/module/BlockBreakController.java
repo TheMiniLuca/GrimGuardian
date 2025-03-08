@@ -2,18 +2,14 @@ package com.gmail.theminiluca.grim.guardian.module;
 
 import ac.grim.grimac.GrimAPI;
 import ac.grim.grimac.player.GrimPlayer;
-import ac.grim.grimac.shaded.com.github.retrooper.packetevents.protocol.component.ComponentTypes;
 import ac.grim.grimac.shaded.com.github.retrooper.packetevents.protocol.item.enchantment.type.EnchantmentTypes;
 import ac.grim.grimac.shaded.com.github.retrooper.packetevents.protocol.player.ClientVersion;
-import ac.grim.grimac.shaded.com.github.retrooper.packetevents.protocol.potion.PotionTypes;
 import ac.grim.grimac.utils.enums.FluidTag;
 import ac.grim.grimac.utils.inventory.EnchantmentHelper;
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.event.PacketListener;
 import com.github.retrooper.packetevents.event.PacketReceiveEvent;
-import com.github.retrooper.packetevents.event.PacketSendEvent;
 import com.github.retrooper.packetevents.manager.server.ServerVersion;
-import com.github.retrooper.packetevents.protocol.attribute.Attributes;
 import com.github.retrooper.packetevents.protocol.component.builtin.item.ItemTool;
 import com.github.retrooper.packetevents.protocol.item.ItemStack;
 import com.github.retrooper.packetevents.protocol.item.type.ItemTypes;
@@ -29,16 +25,12 @@ import com.github.retrooper.packetevents.protocol.world.states.type.StateTypes;
 import com.github.retrooper.packetevents.util.Vector3i;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerDigging;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerBlockBreakAnimation;
-import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerUpdateAttributes;
 import com.gmail.theminiluca.grim.guardian.GrimGuardian;
+import com.gmail.theminiluca.grim.guardian.hook.ServerLevel;
+import com.gmail.theminiluca.grim.guardian.hook.ServerPlayer;
 import com.gmail.theminiluca.grim.guardian.utils.ConfigHandler;
 import com.gmail.theminiluca.grim.guardian.utils.ConfigManager;
 import io.github.retrooper.packetevents.util.SpigotConversionUtil;
-import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.level.block.state.BlockState;
-import net.objecthunter.exp4j.ExpressionBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
@@ -47,10 +39,6 @@ import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.craftbukkit.CraftWorld;
-import org.bukkit.craftbukkit.block.CraftBlock;
-import org.bukkit.craftbukkit.entity.CraftPlayer;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.Listener;
@@ -59,8 +47,6 @@ import org.bukkit.event.block.BlockDamageAbortEvent;
 import org.bukkit.event.block.BlockDamageEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.inventory.meta.components.ToolComponent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -71,6 +57,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 
 public class BlockBreakController implements PacketListener, Listener {
+
 
 
     public static boolean DISABLE = false;
@@ -149,10 +136,10 @@ public class BlockBreakController implements PacketListener, Listener {
             if (action.equals(DiggingAction.START_DIGGING)) {
                 event.setCancelled(true);
                 Bukkit.getScheduler().runTask(GrimGuardian.getInstance(), () -> {
-                    final ServerPlayer serverPlayer = ((CraftPlayer) player).getHandle();
+                    final ServerPlayer serverPlayer = GrimGuardian.getInstance().getServerPlayer(player);
                     final Vector3i vector3i = digging.getBlockPosition();
                     final Block targetBlock = player.getWorld().getBlockAt(vector3i.getX(), vector3i.getY(), vector3i.getZ());
-                    final BlockPos blockPos = ((CraftBlock) targetBlock).getPosition();
+//                    final BlockPos blockPos = ((CraftBlock) targetBlock).getPosition();
                     if (runnable.containsKey(user.getUUID())) {
                         stopRunnable(user, digging);
                     }
@@ -160,12 +147,12 @@ public class BlockBreakController implements PacketListener, Listener {
                     ItemStack tools = SpigotConversionUtil.fromBukkitItemStack(itemStack);
                     final int breakTime = getDefaultBreakTick(player, targetBlock, tools);
 //                    player.sendMessage(breakTime + " breakTime");
-                    if (!serverPlayer.canInteractWithBlock(blockPos, 0.0D)) {
+                    if (!serverPlayer.canInteractWithBlock(targetBlock, 0.0D)) {
                         return;
                     }
                     PlayerInteractEvent interactEvent = new PlayerInteractEvent(player, Action.LEFT_CLICK_BLOCK, itemStack, targetBlock
                             , BlockFace.valueOf(digging.getBlockFace().name())
-                            , EquipmentSlot.HAND, new Vector(blockPos.getX(), blockPos.getY(), blockPos.getZ()));
+                            , EquipmentSlot.HAND, new Vector(targetBlock.getLocation().getX(), targetBlock.getLocation().getY(), targetBlock.getLocation().getZ()));
                     Bukkit.getServer().getPluginManager().callEvent(interactEvent);
                     if (interactEvent.useInteractedBlock() == Event.Result.DENY) {
                         return;
@@ -226,20 +213,12 @@ public class BlockBreakController implements PacketListener, Listener {
 
                             if ((progress >= 10 || blockDamageEvent.getInstaBreak()) && !blockDamageEvent.isCancelled()) {
                                 this.cancel();
-                                if (!serverPlayer.canInteractWithBlock(blockPos, 0.0D)) {
+                                if (!serverPlayer.canInteractWithBlock(targetBlock, 0.0D)) {
                                     return;
                                 }
                                 stopDigging(user, digging.getBlockPosition());
-                                ServerLevel world = ((CraftWorld) player.getWorld()).getHandle();
-                                BlockState blockState = ((CraftBlock) block).getNMS();
-                                BlockPos blockPos = ((CraftBlock) block).getPosition();
-                                if (blockState.getBlock() instanceof net.minecraft.world.level.block.BaseFireBlock) {
-                                    world.levelEvent(net.minecraft.world.level.block.LevelEvent.SOUND_EXTINGUISH_FIRE, blockPos, 0);
-                                } else {
-                                    world.levelEvent(net.minecraft.world.level.block.LevelEvent.PARTICLES_DESTROY_BLOCK
-                                            , blockPos,
-                                            net.minecraft.world.level.block.Block.getId(blockState));
-                                }
+                                ServerLevel world = GrimGuardian.getInstance().getServerLevel(player.getWorld());
+                                world.levelEvent(block);
                                 player.breakBlock(block);
 
                             }
