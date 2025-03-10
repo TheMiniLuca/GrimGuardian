@@ -1,0 +1,65 @@
+# https://minecraft.wiki/w/Breaking
+block-break-controller:
+  formula:
+    correct:
+      function: 30.0
+    incorrect:
+      function: 100.0
+    efficiency:
+      function: eff ^ 2 + 1
+    haste:
+      function: 1 + (max(haste, conduit_power) * 0.2)
+    mining_fatigue:
+      function: 0.3 ^ min(mining_fatigue, 4)
+    instant:
+      condition: (tools + fun_efficiency(eff)) * fun_haste(haste, conduit_power) >= hardness * 30
+  tools:
+    mineral:
+      wood:
+        tier: 0
+        multiplier: 2.0
+      stone:
+        tier: 1
+        multiplier: 4.0
+      iron:
+        tier: 2
+        multiplier: 6.0
+      diamond:
+        tier: 3
+        multiplier: 8.0
+      netherite:
+        tier: 4
+        multiplier: 9.0
+      gold:
+        tier: 0
+        multiplier: 12.0
+    material-tags:
+      swords:
+        blocks:
+          cobweb:
+            multiplier: 15.0
+            is_correct_tool: true
+          pumpkin:
+            multiplier: 1.5
+            is_correct_tool: true
+          melon:
+            multiplier: 1.5
+            is_correct_tool: true
+    materials:
+      shears:
+        blocks:
+          cobweb:
+            multiplier: 15.0
+            is_correct_tool: true
+          leaves:
+            multiplier: 15.0
+            is_correct_tool: true
+          wools:
+            multiplier: 5.0
+            is_correct_tool: true
+          vine:
+            multiplier: 2.0
+            is_correct_tool: true
+          glow_lichen:
+            multiplier: 2.0
+            is_correct_tool: true

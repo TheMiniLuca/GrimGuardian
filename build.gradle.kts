@@ -9,7 +9,7 @@ plugins {
   id("com.gradleup.shadow") version "8.3.5"
 }
 
-java.disableAutoTargetJvm() // Allow consuming JVM 21 projects (i.e. paper_1_21_4) even though our release is 17
+//java.disableAutoTargetJvm() // Allow consuming JVM 21 projects (i.e. paper_1_21_4) even though our release is 17
 
 val main = "GrimGuardian"
 val minecraftVersion = "1.21.4"
@@ -20,6 +20,7 @@ description = "GrimGuardian"
 repositories {
   mavenLocal()
   mavenCentral()
+  gradlePluginPortal()
   maven("https://repo.papermc.io/repository/maven-public/")
   maven("https://repo.codemc.io/repository/maven-releases/")
 }
@@ -38,13 +39,14 @@ dependencies {
   testCompileOnly("org.projectlombok:lombok:1.18.36")
   testAnnotationProcessor("org.projectlombok:lombok:1.18.36")
   compileOnly("org.jetbrains:annotations:26.0.2")
-  compileOnly("ac.grim.grimac:grimac:2.3.67")
+  compileOnly("ac.grim.grimac:grimac:2.3.71")
   implementation("net.objecthunter:exp4j:0.4.8")
 
   implementation(project(":main"))
 
   // Shade the reobf variant
-  runtimeOnly(project(":v1_21_R1", configuration = "reobf"))
+  runtimeOnly(project(":v1_21_R1"))
+  runtimeOnly(project(":v1_21_R4"))
 
   // For Paper 1.20.5+, we don't need to use the reobf variant.
   // If you still support spigot, you will need to use the reobf variant,
@@ -55,11 +57,15 @@ tasks.assemble {
   dependsOn(tasks.shadowJar)
 }
 
-//tasks.jar {
-//  manifest.attributes(
-//    "paperweight-mappings-namespace" to "mojang",
-//  )
-//}
+tasks.jar {
+  manifest.attributes(
+    "paperweight-mappings-namespace" to "mojang",
+  )
+}
+
+tasks.compileJava {
+  options.release = 21
+}
 
 // Configure plugin.yml generation
 // - name, version, and description are inherited from the Gradle project.
@@ -68,8 +74,16 @@ val bukkitPluginYaml = bukkitPluginYaml {
   version = project.version.toString()
   description = project.description
   val split = minecraftVersion.split(".")
+  commands {
+    create("grimguardian") {
+      description = "grimguardian의 메인 명령어"
+      usage = "/grimguardian"
+      permission = "grimguardian.command"
+    }
+  }
   apiVersion = split[0] + "." + split[1]
   depend = listOf("packetevents", "GrimAC")
+
 }
 
 tasks {
@@ -87,14 +101,15 @@ tasks.runServer {
   minecraftVersion("1.21.4")
 }
 
-tasks.register("run1_21_1", RunServer::class) {
+
+tasks.register("run1", RunServer::class) {
   minecraftVersion("1.21.1")
   pluginJars.from(tasks.shadowJar.flatMap { it.archiveFile })
   runDirectory = layout.projectDirectory.dir("run1_21_1")
   systemProperties["Paper.IgnoreJavaVersion"] = true
 }
 
-tasks.register("run1_21_4", RunServer::class) {
+tasks.register("run4", RunServer::class) {
   minecraftVersion("1.21.4")
   pluginJars.from(tasks.shadowJar.flatMap { it.archiveFile })
   runDirectory = layout.projectDirectory.dir("run1_21_4")

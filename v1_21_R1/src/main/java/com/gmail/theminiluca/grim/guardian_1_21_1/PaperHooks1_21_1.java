@@ -7,7 +7,7 @@ import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-public class PaperHook1_21_1 implements PaperHooks {
+public class PaperHooks1_21_1 implements PaperHooks {
     @Override
     public ServerPlayer getServerPlayer(@NotNull Player player) {
         return new ServerPlayer1_21_1(player);
