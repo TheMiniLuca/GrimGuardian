@@ -17,6 +17,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.configuration.InvalidConfigurationException;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -64,6 +65,8 @@ public class GrimGuardian extends JavaPlugin implements Listener, PaperHooks{
                 PacketListenerPriority.MONITOR);
         PacketEvents.getAPI().getEventManager().registerListener(new AttributeController(),
                 PacketListenerPriority.MONITOR);
+        Entity entity;
+        entity.getEntityId()
     }
 
     @Override

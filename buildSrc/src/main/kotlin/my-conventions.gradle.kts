@@ -4,6 +4,7 @@ import org.gradle.kotlin.dsl.repositories
 
 plugins {
   `java-library`
+  `maven-publish`
 }
 
 java {

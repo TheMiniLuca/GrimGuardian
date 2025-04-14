@@ -4,6 +4,7 @@ import ac.grim.grimac.GrimAPI;
 import ac.grim.grimac.player.GrimPlayer;
 import com.github.retrooper.packetevents.event.PacketListener;
 import com.github.retrooper.packetevents.event.PacketSendEvent;
+import com.github.retrooper.packetevents.manager.server.ServerVersion;
 import com.github.retrooper.packetevents.protocol.attribute.Attributes;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.protocol.player.User;
@@ -11,6 +12,7 @@ import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerUp
 import com.gmail.theminiluca.grim.guardian.GrimGuardian;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.PlayerInventory;
 
 import java.util.Iterator;
 
@@ -47,7 +49,6 @@ public class AttributeController implements PacketListener {
             if (packet.getProperties().isEmpty()) {
                 event.setCancelled(true);
             }
-
         }
     }
 

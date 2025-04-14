@@ -29,6 +29,8 @@ import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import static com.gmail.theminiluca.grim.guardian.utils.config.model.ToolRegistry.DEFAULT_MULTIPLIER;
+
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class BlockBreakSpeed {
@@ -62,7 +64,7 @@ public class BlockBreakSpeed {
         WrappedBlockState blockState = SpigotConversionUtil.fromBukkitBlockData(block.getBlockData());
         boolean isCorrectToolForDrop;
 
-        float speedMultiplier = (float) ToolRegistry.DEFAULT_MULTIPLIER;
+        float speedMultiplier = (float) DEFAULT_MULTIPLIER;
         float hardness = block.getType().getHardness();
         int tier;
 
@@ -80,10 +82,9 @@ public class BlockBreakSpeed {
         } else if (itemStack.getType().hasAttribute(ItemTypes.ItemAttribute.HOE)) {
             correct = BlockTags.MINEABLE_HOE.contains(blockState.getType());
         }
-        BlockRegistry registry = toolRegistry == null ? null : toolRegistry.getBlockRegistry(blockState.getType());
         if (correct) {
-            speedMultiplier = (float) (registry == null ? ToolRegistry.DEFAULT_MULTIPLIER : registry.getMultiplier());
-            tier = (registry == null ? ToolRegistry.DEFAULT_TIER : registry.getTier());
+            speedMultiplier = (float) (toolRegistry == null ? DEFAULT_MULTIPLIER : toolRegistry.getMultiplier());
+            tier = (toolRegistry == null ? ToolRegistry.DEFAULT_TIER : toolRegistry.getTier());
             if (tier < 3 && BlockTags.NEEDS_DIAMOND_TOOL.contains(blockState.getType())) {
                 correct = false;
             } else if (tier < 2 && BlockTags.NEEDS_IRON_TOOL.contains(blockState.getType())) {
@@ -99,6 +100,7 @@ public class BlockBreakSpeed {
             isCorrectToolForDrop = flag;
         }
 
+        BlockRegistry registry = toolRegistry == null ? null : toolRegistry.getBlockRegistry(blockState.getType());
         if (registry != null) {
             isCorrectToolForDrop = registry.isCorrectForDrops();
             speedMultiplier = (float) registry.getMultiplier();

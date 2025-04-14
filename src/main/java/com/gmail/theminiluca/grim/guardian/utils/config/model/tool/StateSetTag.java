@@ -1,9 +1,11 @@
 package com.gmail.theminiluca.grim.guardian.utils.config.model.tool;
 
+import com.github.retrooper.packetevents.protocol.world.states.defaulttags.BlockTags;
 import com.github.retrooper.packetevents.protocol.world.states.type.StateType;
 import com.github.retrooper.packetevents.protocol.world.states.type.StateTypes;
 import com.gmail.theminiluca.grim.guardian.GrimGuardian;
 import lombok.Getter;
+import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -17,34 +19,6 @@ public class StateSetTag extends HashSet<StateType> {
 
     private final String name;
     public static final Map<String, StateSetTag> STATE_MAP = new HashMap<>();
-
-    public static final StateSetTag LEAVES = new StateSetTag("leaves",
-            StateTypes.OAK_LEAVES,
-            StateTypes.SPRUCE_LEAVES,
-            StateTypes.BIRCH_LEAVES,
-            StateTypes.JUNGLE_LEAVES,
-            StateTypes.ACACIA_LEAVES,
-            StateTypes.CHERRY_LEAVES,
-            StateTypes.DARK_OAK_LEAVES,
-            StateTypes.MANGROVE_LEAVES,
-            StateTypes.AZALEA_LEAVES, StateTypes.FLOWERING_AZALEA_LEAVES);
-    public static final StateSetTag WOOLS = new StateSetTag("wools",
-            StateTypes.WHITE_WOOL,
-            StateTypes.ORANGE_WOOL,
-            StateTypes.MAGENTA_WOOL,
-            StateTypes.LIGHT_BLUE_WOOL,
-            StateTypes.YELLOW_WOOL,
-            StateTypes.LIME_WOOL,
-            StateTypes.PINK_WOOL,
-            StateTypes.GRAY_WOOL,
-            StateTypes.LIGHT_GRAY_WOOL,
-            StateTypes.CYAN_WOOL,
-            StateTypes.PURPLE_WOOL,
-            StateTypes.BLUE_WOOL,
-            StateTypes.BROWN_WOOL,
-            StateTypes.GREEN_WOOL,
-            StateTypes.RED_WOOL,
-            StateTypes.BLACK_WOOL);
 
     public static void put(StateSetTag setTag) {
         STATE_MAP.put(setTag.getName(), setTag);
@@ -61,14 +35,28 @@ public class StateSetTag extends HashSet<StateType> {
         } catch (IllegalAccessException e) {
             throw new RuntimeException("Failed to initialize ItemStat map", e);
         }
-        put(LEAVES);
-        put(WOOLS);
 
+        try {
+            for (Field field : BlockTags.class.getDeclaredFields()) {
+                if (Modifier.isStatic(field.getModifiers()) &&
+                        BlockTags.class.isAssignableFrom(field.getType())) {
+                    BlockTags stat = (BlockTags) field.get(null);
+                    STATE_MAP.put(stat.getName(), new StateSetTag(stat.getName(), stat.getStates()));
+                }
+            }
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException("Failed to initialize ItemStat map", e);
+        }
     }
 
     public StateSetTag(String name, StateType... stateTypes) {
         this.name = name;
         addAll(List.of(stateTypes));
+    }
+
+    public StateSetTag(String name, Set<StateType> stateTypes) {
+        this.name = name;
+        addAll(stateTypes);
     }
 
 

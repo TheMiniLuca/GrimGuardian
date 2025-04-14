@@ -25,6 +25,18 @@ repositories {
   maven("https://repo.codemc.io/repository/maven-releases/")
 }
 
+publishing {
+  publications {
+    create<MavenPublication>("maven") {
+      groupId = "com.gmail.theminiluca.grim.guardian"
+      artifactId = "grimguardian"
+      version = "1.0.0"
+      from(components["java"])
+    }
+
+  }
+}
+
 dependencies {
 
 
