@@ -65,8 +65,6 @@ public class GrimGuardian extends JavaPlugin implements Listener, PaperHooks{
                 PacketListenerPriority.MONITOR);
         PacketEvents.getAPI().getEventManager().registerListener(new AttributeController(),
                 PacketListenerPriority.MONITOR);
-        Entity entity;
-        entity.getEntityId()
     }
 
     @Override
