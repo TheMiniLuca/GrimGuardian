@@ -1,4 +1,4 @@
-package com.gmail.theminiluca.grim.guardian_1_21_4;
+package com.gmail.theminiluca.grim.guardian_1_21_8;
 
 import lombok.Getter;
 import net.minecraft.core.BlockPos;
@@ -12,16 +12,18 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 @Getter
-public class ServerPlayer1_21_4 extends com.gmail.theminiluca.grim.guardian.hook.ServerPlayer {
+public class ServerPlayer1_21_8 extends com.gmail.theminiluca.grim.guardian.hook.ServerPlayer {
     private final net.minecraft.server.level.ServerPlayer serverPlayer;
-    public ServerPlayer1_21_4(@NotNull Player player) {
+    public ServerPlayer1_21_8(@NotNull Player player) {
         super(player);
         this.serverPlayer = ((CraftPlayer) player).getHandle();
     }
 
+
     @Override
     public boolean canInteractWithBlock(@NotNull Block block, double value) {
         final BlockPos blockPos = ((CraftBlock) block).getPosition();
+
         return serverPlayer.canInteractWithBlock(blockPos, value);
     }
 

@@ -1,7 +1,9 @@
 package com.gmail.theminiluca.grim.guardian.controller;
 
 import ac.grim.grimac.GrimAPI;
+
 import ac.grim.grimac.player.GrimPlayer;
+import ac.grim.grimac.shaded.com.github.retrooper.packetevents.protocol.attribute.Attributes;
 import ac.grim.grimac.shaded.com.github.retrooper.packetevents.protocol.item.enchantment.type.EnchantmentTypes;
 import ac.grim.grimac.shaded.com.github.retrooper.packetevents.protocol.player.ClientVersion;
 import ac.grim.grimac.utils.enums.FluidTag;
@@ -10,6 +12,7 @@ import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.event.PacketListener;
 import com.github.retrooper.packetevents.event.PacketReceiveEvent;
 import com.github.retrooper.packetevents.manager.server.ServerVersion;
+import com.github.retrooper.packetevents.protocol.attribute.Attribute;
 import com.github.retrooper.packetevents.protocol.item.ItemStack;
 import com.github.retrooper.packetevents.protocol.item.type.ItemTypes;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
@@ -31,7 +34,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.World;
-import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -126,7 +128,10 @@ public class BlockBreakController implements PacketListener, Listener {
             if (action.equals(DiggingAction.RELEASE_USE_ITEM) || action.equals(DiggingAction.DROP_ITEM) || action.equals(DiggingAction.DROP_ITEM_STACK) || action.equals(DiggingAction.SWAP_ITEM_WITH_OFFHAND)) {
                 return;
             }
-            if (action.equals(DiggingAction.START_DIGGING)) {
+            if (!action.equals(DiggingAction.START_DIGGING)) {
+                stopRunnable(user, digging);
+                event.setCancelled(true);
+            } else {
                 event.setCancelled(true);
                 Bukkit.getScheduler().runTask(GrimGuardian.getInstance(), () -> {
                     final ServerPlayer serverPlayer = GrimGuardian.getInstance().getServerPlayer(player);
@@ -149,7 +154,8 @@ public class BlockBreakController implements PacketListener, Listener {
                     if (interactEvent.useInteractedBlock() == Event.Result.DENY) {
                         return;
                     }
-                    @NotNull GrimPlayer grimPlayer = GrimAPI.INSTANCE.getPlayerDataManager().getPlayer(player);
+                    @NotNull GrimPlayer grimPlayer = Objects.requireNonNull(GrimAPI.INSTANCE.getPlayerDataManager()
+                            .getPlayer(player.getUniqueId()));
 //                    ms.put(player.getUniqueId(), System.currentTimeMillis());
                     runnable.put(user.getUUID(), new BukkitRunnable() {
                         float workingTime = 0;
@@ -162,7 +168,8 @@ public class BlockBreakController implements PacketListener, Listener {
                                 return;
                             }
                             Block block = player.getWorld().getBlockAt(vector3i.getX(), vector3i.getY(), vector3i.getZ());
-                            if (!player.isOnline() || !grimPlayer.bukkitPlayer.isOnline()) {
+                            float hardness = block.getType().getHardness();
+                            if (!player.isOnline() || !grimPlayer.platformPlayer.isOnline()) {
                                 stopRunnable(user, digging);
                                 this.cancel();
                                 return;
@@ -186,14 +193,15 @@ public class BlockBreakController implements PacketListener, Listener {
                             float worktime = 1.0F;
 //                                int hasteLevel = Math.max(digSpeed.isEmpty() ? 0 : digSpeed.getAsInt(), conduit.isEmpty() ? 0 : conduit.getAsInt());
 //                            worktime *= (float) ConfigHandler.evaluate(ConfigHandler.HASTE_EQUATION, grimPlayer, block.getType().getHardness());
-                            worktime *= (float) ConfigYaml.getInstance().getFormula(Formula.HASTE).evaluate(grimPlayer, block.getType().getHardness());
-                            worktime *= (float) ConfigYaml.getInstance().getFormula(Formula.MINING_FATIGUE).evaluate(grimPlayer, block.getType().getHardness());
+                            worktime *= (float) ConfigYaml.getInstance().getFormula(Formula.HASTE).evaluate(grimPlayer, hardness);
+                            worktime *= (float) ConfigYaml.getInstance().getFormula(Formula.MINING_FATIGUE).evaluate(grimPlayer, hardness);
                             if (!grimPlayer.packetStateData.packetPlayerOnGround) {
                                 worktime /= 5.0F;
                             }
                             if (grimPlayer.fluidOnEyes == FluidTag.WATER) {
-                                if (grimPlayer.getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_21) && PacketEvents.getAPI().getServerManager().getVersion().isNewerThanOrEquals(ServerVersion.V_1_21)) {
-                                    worktime *= (float) grimPlayer.compensatedEntities.self.getAttributeValue(ac.grim.grimac.shaded.com.github.retrooper.packetevents.protocol.attribute.Attributes.PLAYER_SUBMERGED_MINING_SPEED);
+                                if (grimPlayer.getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_21)
+                                        && PacketEvents.getAPI().getServerManager().getVersion().isNewerThanOrEquals(ServerVersion.V_1_21)) {
+                                    worktime *= (float) grimPlayer.compensatedEntities.self.getAttributeValue(Attributes.BLOCK_BREAK_SPEED);
                                 } else {
                                     if (EnchantmentHelper.getMaximumEnchantLevel(grimPlayer.getInventory(), EnchantmentTypes.AQUA_AFFINITY, ac.grim.grimac.shaded.com.github.retrooper.packetevents.PacketEvents
                                             .getAPI().getServerManager().getVersion().toClientVersion()) == 0) {
@@ -220,9 +228,6 @@ public class BlockBreakController implements PacketListener, Listener {
                         }
                     }.runTaskTimer(GrimGuardian.getInstance(), 0L, 1L).getTaskId());
                 });
-            } else {
-                stopRunnable(user, digging);
-                event.setCancelled(true);
             }
         }
     }

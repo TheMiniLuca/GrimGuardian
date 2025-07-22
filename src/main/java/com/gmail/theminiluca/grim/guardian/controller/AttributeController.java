@@ -10,12 +10,14 @@ import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerUpdateAttributes;
 import com.gmail.theminiluca.grim.guardian.GrimGuardian;
+import lombok.extern.slf4j.Slf4j;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.PlayerInventory;
 
 import java.util.Iterator;
 
+@Slf4j
 public class AttributeController implements PacketListener {
 
     @Override
@@ -37,14 +39,18 @@ public class AttributeController implements PacketListener {
             Iterator<WrapperPlayServerUpdateAttributes.Property> iterator = packet.getProperties().iterator();
             while (iterator.hasNext()) {
                 WrapperPlayServerUpdateAttributes.Property attributes = iterator.next();
-                if (!(Attributes.PLAYER_BLOCK_BREAK_SPEED.equals(attributes.getAttribute()))) continue;
-                GrimPlayer grimPlayer = GrimAPI.INSTANCE.getPlayerDataManager().getPlayer(player);
-                if (grimPlayer.compensatedEntities.self
-                        .getAttributeValue(ac.grim.grimac.shaded.com.github.retrooper.packetevents.protocol.attribute.Attributes.getByName(attributes.getAttribute().getName().toString())) == 0.0F) {
-                    iterator.remove();  // 안전하게 리스트에서 요소 제거
-                    continue;
-                }
+                if (!(Attributes.BLOCK_BREAK_SPEED.equals(attributes.getAttribute()))) continue;
                 attributes.setValue(0.0F);
+//                try {
+//                    if (grimPlayer.compensatedEntities.self
+//                            .getAttributeValue(attributes.getAttribute()) == 0.0F) {
+//                        iterator.remove();  // 안전하게 리스트에서 요소 제거
+//                        continue;
+//                    }
+//                    attributes.setValue(0.0F);
+//                } catch (Exception e) {
+//                    log.error(e.getMessage(), e);
+//                }
             }
             if (packet.getProperties().isEmpty()) {
                 event.setCancelled(true);

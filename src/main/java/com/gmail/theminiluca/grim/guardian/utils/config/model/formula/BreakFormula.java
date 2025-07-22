@@ -2,10 +2,13 @@ package com.gmail.theminiluca.grim.guardian.utils.config.model.formula;
 
 import ac.grim.grimac.player.GrimPlayer;
 import ac.grim.grimac.shaded.com.github.retrooper.packetevents.PacketEvents;
+import ac.grim.grimac.shaded.com.github.retrooper.packetevents.protocol.item.ItemStack;
 import ac.grim.grimac.shaded.com.github.retrooper.packetevents.protocol.item.enchantment.type.EnchantmentTypes;
 import ac.grim.grimac.shaded.com.github.retrooper.packetevents.protocol.potion.PotionType;
 import ac.grim.grimac.shaded.com.github.retrooper.packetevents.protocol.potion.PotionTypes;
 import ac.grim.grimac.shaded.io.github.retrooper.packetevents.util.SpigotConversionUtil;
+import ac.grim.grimac.utils.inventory.Inventory;
+import ac.grim.grimac.utils.latency.CompensatedInventory;
 import com.gmail.theminiluca.grim.guardian.utils.config.ConfigYaml;
 import com.gmail.theminiluca.grim.guardian.utils.config.model.ToolRegistry;
 import lombok.EqualsAndHashCode;
@@ -18,6 +21,8 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.NotNull;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.*;
 
 @EqualsAndHashCode
@@ -143,10 +148,25 @@ public class BreakFormula {
     public double evaluate(GrimPlayer grimPlayer, double hardness) {
         Map<String, Double> map = new HashMap<>();
         map.put("hardness", hardness);
-        ToolRegistry toolRegistry = ConfigYaml.getInstance().getToolRegistry(SpigotConversionUtil.toBukkitItemStack(grimPlayer.getInventory().getHeldItem()));
+
+        CompensatedInventory inventory = grimPlayer.getInventory();
+        ItemStack held = inventory.getHeldItem();
+//        inventory.getHeldItem().
+//        try {
+//            Method method = inventory.getClass().getDeclaredMethod("getHeldItem");
+//            System.out.println(method.invoke(inventory).getClass());
+//            held = (ItemStack) method.invoke(inventory);
+//        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+//            throw new RuntimeException(e);
+//        }
+//        System.out.println(Arrays.stream(inventory.getClass().getDeclaredMethods()).map(Method::getName).toList());
+//        System.out.println(Arrays.stream(CompensatedInventory.class.getDeclaredMethods()).map(Method::getName).toList() + " class");
+
+        ToolRegistry toolRegistry = ConfigYaml.getInstance().getToolRegistry(SpigotConversionUtil.toBukkitItemStack(held));
         map.put("tools", toolRegistry == null ? ToolRegistry.DEFAULT_MULTIPLIER : toolRegistry.getMultiplier());
 //        map.put("tools", BlockBreakController.getAttributeTools(grimPlayer.getInventory().getHeldItem(), true).doubleValue());
-        map.put("eff", (double) grimPlayer.getInventory().getHeldItem().getEnchantmentLevel(EnchantmentTypes.BLOCK_EFFICIENCY, PacketEvents.getAPI().getServerManager().getVersion().toClientVersion()));
+        map.put("eff", (double) held.getEnchantmentLevel(EnchantmentTypes.BLOCK_EFFICIENCY,
+                PacketEvents.getAPI().getServerManager().getVersion().toClientVersion()));
         for (PotionType type : PotionTypes.values()) {
             OptionalInt level = grimPlayer.compensatedEntities.getPotionLevelForPlayer(type);
             map.put(type.getName().getKey(), (double) (level.isPresent() ? level.getAsInt() + 1 : 0));

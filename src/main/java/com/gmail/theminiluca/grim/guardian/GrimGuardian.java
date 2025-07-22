@@ -3,11 +3,11 @@ package com.gmail.theminiluca.grim.guardian;
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.event.PacketListenerPriority;
 import com.gmail.theminiluca.grim.guardian.command.GrimGuardianCommand;
+import com.gmail.theminiluca.grim.guardian.controller.AttributeController;
+import com.gmail.theminiluca.grim.guardian.controller.BlockBreakController;
 import com.gmail.theminiluca.grim.guardian.hook.PaperHooks;
 import com.gmail.theminiluca.grim.guardian.hook.ServerLevel;
 import com.gmail.theminiluca.grim.guardian.hook.ServerPlayer;
-import com.gmail.theminiluca.grim.guardian.controller.AttributeController;
-import com.gmail.theminiluca.grim.guardian.controller.BlockBreakController;
 import com.gmail.theminiluca.grim.guardian.utils.config.ConfigYaml;
 import lombok.Getter;
 import lombok.Setter;
@@ -17,7 +17,6 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.configuration.InvalidConfigurationException;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -26,19 +25,13 @@ import org.jetbrains.annotations.NotNull;
 import java.io.IOException;
 import java.util.Objects;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
-//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 @Getter
 @Setter
 @Slf4j
 public class GrimGuardian extends JavaPlugin implements Listener, PaperHooks{
 
 
-    public static Logger log() {
-        return GrimGuardian.getInstance().getLogger();
-    }
     @Getter
     private static GrimGuardian instance;
 

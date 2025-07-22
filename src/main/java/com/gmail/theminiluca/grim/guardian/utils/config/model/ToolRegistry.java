@@ -1,25 +1,17 @@
 package com.gmail.theminiluca.grim.guardian.utils.config.model;
 
-import com.destroystokyo.paper.MaterialSetTag;
-import com.destroystokyo.paper.MaterialTags;
-import com.github.retrooper.packetevents.protocol.world.states.WrappedBlockState;
 import com.github.retrooper.packetevents.protocol.world.states.type.StateType;
-import com.github.retrooper.packetevents.protocol.world.states.type.StateTypes;
 import com.gmail.theminiluca.grim.guardian.GrimGuardian;
 import com.gmail.theminiluca.grim.guardian.utils.config.model.tool.StateSetTag;
 import com.gmail.theminiluca.grim.guardian.utils.config.model.tool.Tool;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import org.bukkit.block.BlockState;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Supplier;
-import java.util.logging.Level;
 
 @Getter
 @EqualsAndHashCode
@@ -73,7 +65,7 @@ public class ToolRegistry {
                 StateSetTag stateSetTag = StateSetTag.valueOf(key.toLowerCase());
                 if (stateSetTag == null) {
 //                    StateSetTag.STATE_MAP.forEach((key1, value) -> GrimGuardian.log().info(key1 + " = " + value + " stats"));
-                    GrimGuardian.log().warning("The provided '%s' is not a valid StateType.".formatted(key));
+                    GrimGuardian.getInstance().getLogger().warning("The provided '%s' is not a valid StateType.".formatted(key));
                     continue;
                 }
                 blockRegistries.put(stateSetTag, new BlockRegistry(stateSetTag, section));

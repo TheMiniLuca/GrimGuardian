@@ -16,5 +16,7 @@ public abstract class ServerPlayer {
 
     public abstract boolean canInteractWithBlock(@NotNull Block block, double value);
 
+    public abstract double getBlockBreakSpeed();
+
 
 }

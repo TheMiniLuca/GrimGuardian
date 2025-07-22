@@ -7,3 +7,4 @@ rootProject.name = "GrimGuardian"
 include("main")
 include("v1_21_R1")
 include("v1_21_R4")
+include("v1_21_R8")

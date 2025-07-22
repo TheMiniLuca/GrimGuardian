@@ -20,14 +20,14 @@ import io.github.retrooper.packetevents.util.SpigotConversionUtil;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.bukkit.attribute.Attribute;
-import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.Objects;
 
 import static com.gmail.theminiluca.grim.guardian.utils.config.model.ToolRegistry.DEFAULT_MULTIPLIER;
 
@@ -130,23 +130,24 @@ public class BlockBreakSpeed {
 //                }
 //            }
 //        }
-        @NotNull final GrimPlayer grimPlayer = GrimAPI.INSTANCE.getPlayerDataManager().getPlayer(player);
+        @NotNull final GrimPlayer grimPlayer = Objects.requireNonNull(GrimAPI.INSTANCE.getPlayerDataManager().getPlayer(player.getUniqueId()));
         int digSpeed = itemStack.getEnchantmentLevel(EnchantmentTypes.BLOCK_EFFICIENCY, PacketEvents.getAPI().getServerManager().getVersion().toClientVersion());
         if (speedMultiplier > 1.0f) {
             if (grimPlayer.getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_21) && PacketEvents.getAPI().getServerManager().getVersion().isNewerThanOrEquals(ServerVersion.V_1_21)) {
-                speedMultiplier += (float) grimPlayer.compensatedEntities.self.getAttributeValue(Attributes
-                        .PLAYER_MINING_EFFICIENCY);
+                speedMultiplier += (float) grimPlayer.compensatedEntities.self.getAttributeValue(Attributes.MINING_EFFICIENCY);
             }
             if (digSpeed > 0) {
 
                 speedMultiplier += (float) ConfigYaml.getInstance().getFormula(Formula.EFFICIENCY).evaluate(grimPlayer, block.getType().getHardness());
             }
         }
-        AttributeInstance instance = player.getAttribute(Attribute.PLAYER_BLOCK_BREAK_SPEED);
-        if (instance == null || instance.getValue() == 0.0f) {
+
+        double blockBreak = GrimGuardian.getInstance().getServerPlayer(player).getBlockBreakSpeed();
+        if (blockBreak == 0.0f) {
             return indestructible();
         }
-        speedMultiplier *= (float) instance.getValue();
+        speedMultiplier *= (float) blockBreak;
+
 
         PotionEffect fatigue = player.getPotionEffect(PotionEffectType.MINING_FATIGUE);
         if (speedMultiplier == 0.0F) {
