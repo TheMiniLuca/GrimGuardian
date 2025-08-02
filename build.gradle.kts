@@ -11,7 +11,6 @@ plugins {
 
 //java.disableAutoTargetJvm() // Allow consuming JVM 21 projects (i.e. paper_1_21_4) even though our release is 17
 
-val main = "GrimGuardian"
 val minecraftVersion = "1.21.4"
 group = "com.gmail.theminiluca.grim.guardian"
 version = "1.1.0-SNAPSHOT"
@@ -95,7 +94,7 @@ tasks.compileJava {
 // Configure plugin.yml generation
 // - name, version, and description are inherited from the Gradle project.
 val bukkitPluginYaml = bukkitPluginYaml {
-  main = "${group}.${this@Build_gradle.main}"
+  main = "${group}.${"GrimGuardian"}"
   version = project.version.toString()
   description = project.description
   val split = minecraftVersion.split(".")

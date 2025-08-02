@@ -8,6 +8,7 @@ import com.github.retrooper.packetevents.manager.server.ServerVersion;
 import com.github.retrooper.packetevents.protocol.attribute.Attributes;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.protocol.player.User;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSoundEffect;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerUpdateAttributes;
 import com.gmail.theminiluca.grim.guardian.GrimGuardian;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +23,11 @@ public class AttributeController implements PacketListener {
 
     @Override
     public void onPacketSend(PacketSendEvent event) {
+        if (event.getPacketType().equals(PacketType.Play.Server.NAMED_SOUND_EFFECT)) {
+            WrapperPlayServerSoundEffect packet = new WrapperPlayServerSoundEffect(event);
+            event.setCancelled(true);
+
+        }
         User user = event.getUser();
         if (user.getUUID() == null) return;
         Player player = Bukkit.getPlayer(user.getUUID());

@@ -23,6 +23,7 @@ public class StateSetTag extends HashSet<StateType> {
     public static void put(StateSetTag setTag) {
         STATE_MAP.put(setTag.getName(), setTag);
     }
+
     static {
         try {
             for (Field field : StateTypes.class.getDeclaredFields()) {

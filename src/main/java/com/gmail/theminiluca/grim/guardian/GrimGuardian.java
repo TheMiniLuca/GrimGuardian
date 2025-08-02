@@ -2,6 +2,7 @@ package com.gmail.theminiluca.grim.guardian;
 
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.event.PacketListenerPriority;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSoundEffect;
 import com.gmail.theminiluca.grim.guardian.command.GrimGuardianCommand;
 import com.gmail.theminiluca.grim.guardian.controller.AttributeController;
 import com.gmail.theminiluca.grim.guardian.controller.BlockBreakController;
