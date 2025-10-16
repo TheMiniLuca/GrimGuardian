@@ -8,6 +8,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockDamageAbortEvent;
@@ -23,7 +24,7 @@ import static com.gmail.theminiluca.grim.guardian.GrimGuardian.ENABLE;
 
 public class BukkitListener implements Listener {
     public static final @NotNull Map<UUID, BlockBreakMode> BLOCK_BREAK_MODE_MAP = new HashMap<>();
-    @EventHandler
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onBlockAbort(BlockDamageAbortEvent event) {
         if (!ENABLE) return;
         @Nullable BlockBreakMode blockBreakMode = BLOCK_BREAK_MODE_MAP.get(event.getPlayer().getUniqueId());
@@ -31,7 +32,7 @@ public class BukkitListener implements Listener {
         blockBreakMode.cancel();
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onInteract(PlayerInteractEvent event) {
         Player player = event.getPlayer();
         if (!ENABLE) return;
