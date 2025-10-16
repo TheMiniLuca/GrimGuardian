@@ -24,6 +24,7 @@ import com.github.retrooper.packetevents.util.Vector3i;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerDigging;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerBlockBreakAnimation;
 import com.gmail.theminiluca.grim.guardian.GrimGuardian;
+import com.gmail.theminiluca.grim.guardian.event.BlockImpactEvent;
 import com.gmail.theminiluca.grim.guardian.hook.ServerLevel;
 import com.gmail.theminiluca.grim.guardian.hook.ServerPlayer;
 import com.gmail.theminiluca.grim.guardian.utils.config.ConfigYaml;
@@ -141,19 +142,20 @@ public class BlockBreakController implements PacketListener, Listener {
                     if (runnable.containsKey(user.getUUID())) {
                         stopRunnable(user, digging);
                     }
+
                     org.bukkit.inventory.ItemStack itemStack = player.getInventory().getItemInMainHand();
                     ItemStack tools = SpigotConversionUtil.fromBukkitItemStack(itemStack);
                     final BlockBreakSpeed blockBreakSpeed = BlockBreakSpeed.getDefaultBreakTick(player, targetBlock, tools);
                     if (!serverPlayer.canInteractWithBlock(targetBlock, 0.0D)) {
                         return;
                     }
-                    PlayerInteractEvent interactEvent = new PlayerInteractEvent(player, Action.LEFT_CLICK_BLOCK, itemStack, targetBlock
-                            , BlockFace.valueOf(digging.getBlockFace().name())
-                            , EquipmentSlot.HAND, new Vector(targetBlock.getLocation().getX(), targetBlock.getLocation().getY(), targetBlock.getLocation().getZ()));
-                    Bukkit.getServer().getPluginManager().callEvent(interactEvent);
-                    if (interactEvent.useInteractedBlock() == Event.Result.DENY) {
-                        return;
-                    }
+//                    PlayerInteractEvent interactEvent = new PlayerInteractEvent(player, Action.LEFT_CLICK_BLOCK, itemStack, targetBlock
+//                            , BlockFace.valueOf(digging.getBlockFace().name())
+//                            , EquipmentSlot.HAND, new Vector(targetBlock.getLocation().getX(), targetBlock.getLocation().getY(), targetBlock.getLocation().getZ()));
+//                    Bukkit.getServer().getPluginManager().callEvent(interactEvent);
+//                    if (interactEvent.useInteractedBlock() == Event.Result.DENY) {
+//                        return;
+//                    }
                     @NotNull GrimPlayer grimPlayer = Objects.requireNonNull(GrimAPI.INSTANCE.getPlayerDataManager()
                             .getPlayer(player.getUniqueId()));
 //                    ms.put(player.getUniqueId(), System.currentTimeMillis());
@@ -183,9 +185,9 @@ public class BlockBreakController implements PacketListener, Listener {
                                 return;
                             }
                             byte progress = (byte) ((workingTime / ((((float) blockBreakSpeed.getTick()) + 6.0F))) * 10);
-                            BlockDamageEvent blockDamageEvent = new BlockDamageEvent(player, block, player.getInventory().getItemInMainHand(), blockBreakSpeed.isInstantBreak());
-                            Bukkit.getServer().getPluginManager().callEvent(blockDamageEvent);
-                            if (!blockDamageEvent.isCancelled())
+                            BlockImpactEvent blockImpactEvent = new BlockImpactEvent(player, block, BlockFace.valueOf(digging.getBlockFace().name()), player.getInventory().getItemInMainHand(), blockBreakSpeed.isInstantBreak());
+                            blockImpactEvent.callEvent();
+                            if (!blockImpactEvent.isCancelled())
                                 if (backProgress != progress) {
                                     destroyBlockProgress(player, player.getWorld(), vector3i, progress);
                                 }
@@ -209,10 +211,10 @@ public class BlockBreakController implements PacketListener, Listener {
                                     }
                                 }
                             }
-                            if (!blockDamageEvent.isCancelled()) workingTime += Math.max(worktime, 0);
+                            if (!blockImpactEvent.isCancelled()) workingTime += Math.max(worktime, 0);
                             backProgress = progress;
 
-                            if ((progress >= 10 || blockDamageEvent.getInstaBreak()) && !blockDamageEvent.isCancelled()) {
+                            if ((progress >= 10 || blockImpactEvent.isInstantBreak()) && !blockImpactEvent.isCancelled()) {
                                 this.cancel();
                                 if (!serverPlayer.canInteractWithBlock(targetBlock, 0.0D)) {
                                     return;

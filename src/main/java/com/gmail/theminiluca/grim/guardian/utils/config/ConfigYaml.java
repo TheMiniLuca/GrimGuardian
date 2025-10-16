@@ -46,6 +46,7 @@ public class ConfigYaml extends YamlConfiguration {
     private final Map<Formula, BreakFormula> formulaMap = new HashMap<>();
 
     public void load() throws IOException, InvalidConfigurationException {
+        GrimGuardian.getInstance().saveResource("config.yml", false);
         load(new File(GrimGuardian.getInstance().getDataFolder(), "config.yml"));
 //        InputStream stream = GrimGuardian.getInstance().getResource("config.yml");
 //        if (stream == null) return;

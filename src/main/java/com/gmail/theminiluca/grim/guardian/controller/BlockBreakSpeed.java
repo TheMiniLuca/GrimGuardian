@@ -4,6 +4,7 @@ import ac.grim.grimac.GrimAPI;
 import ac.grim.grimac.player.GrimPlayer;
 import ac.grim.grimac.shaded.com.github.retrooper.packetevents.protocol.attribute.Attributes;
 import ac.grim.grimac.shaded.com.github.retrooper.packetevents.protocol.player.ClientVersion;
+import com.destroystokyo.paper.MaterialSetTag;
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.manager.server.ServerVersion;
 import com.github.retrooper.packetevents.protocol.item.ItemStack;

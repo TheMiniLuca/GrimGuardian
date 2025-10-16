@@ -62,10 +62,10 @@ dependencies {
 
   implementation("net.objecthunter:exp4j:0.4.8")
 
-  api("github.scarsz:configuralize:1.4.1") {
-    exclude(group = "org.yaml", module = "snakeyaml")
-  }
-  api("ac.grim.grimac:GrimAPI:1.1.0.0")
+//  compileOnly("github.scarsz:configuralize:1.4.1") {
+//    exclude(group = "org.yaml", module = "snakeyaml")
+//  }
+  compileOnly("ac.grim.grimac:GrimAPI:1.1.0.0")
 
   implementation(project(":main"))
   runtimeOnly(project(":v1_21_R1"))

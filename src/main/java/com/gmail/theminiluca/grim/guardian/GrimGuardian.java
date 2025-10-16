@@ -56,9 +56,9 @@ public class GrimGuardian extends JavaPlugin implements Listener, PaperHooks{
     public void onLoad() {
         blockBreakController = new BlockBreakController();
         PacketEvents.getAPI().getEventManager().registerListener(blockBreakController,
-                PacketListenerPriority.MONITOR);
+                PacketListenerPriority.HIGHEST);
         PacketEvents.getAPI().getEventManager().registerListener(new AttributeController(),
-                PacketListenerPriority.MONITOR);
+                PacketListenerPriority.HIGHEST);
     }
 
     @Override
