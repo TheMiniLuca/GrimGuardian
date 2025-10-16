@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 
-import static com.gmail.theminiluca.grim.guardian.controller.BlockBreakController.DISABLE;
+import static com.gmail.theminiluca.grim.guardian.GrimGuardian.ENABLE;
 
 public class GrimGuardianCommand implements CommandExecutor, TabCompleter {
     @Override
@@ -44,8 +44,8 @@ public class GrimGuardianCommand implements CommandExecutor, TabCompleter {
             }
         }
         if ("disable".equals(args[0])) {
-            DISABLE = !DISABLE;
-            sender.sendMessage(DISABLE + " 값으로 설정했습니다.");
+            ENABLE = !ENABLE;
+            sender.sendMessage(ENABLE + " 값으로 설정했습니다.");
         }
         if ("debug".equals(args[0])) {
             if (!(sender instanceof Player player)) return false;

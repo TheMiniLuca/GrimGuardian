@@ -1,5 +1,6 @@
 package com.gmail.theminiluca.grim.guardian_1_21_4;
 
+import com.github.retrooper.packetevents.util.Vector3i;
 import com.gmail.theminiluca.grim.guardian.hook.ServerLevel;
 import lombok.Getter;
 import net.minecraft.core.BlockPos;
@@ -30,5 +31,20 @@ public class ServerLevel1_21_4 extends ServerLevel {
                     , blockPos,
                     net.minecraft.world.level.block.Block.getId(blockState));
         }
+    }
+
+    @Override
+    public void destroyBlockProgress(int breakerId, @NotNull Block pos, int progress) {
+        BlockPos blockPos = ((CraftBlock) pos).getPosition();
+        serverLevel.destroyBlockProgress(breakerId, blockPos, progress);
+    }
+    @Override
+    public void cancelBlockProgress(int breakerId, @NotNull Block pos) {
+        destroyBlockProgress(breakerId, pos, -1);
+    }
+
+    @Override
+    public int getMaxBuildHeight() {
+        return serverLevel.getMaxY();
     }
 }

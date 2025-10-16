@@ -132,6 +132,7 @@ tasks {
 
 tasks.runServer {
   minecraftVersion("1.21.4")
+  jvmArgs = listOf<String>("-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005")
 }
 
 
@@ -161,5 +162,6 @@ tasks.register("run8", RunServer::class) {
   minecraftVersion("1.21.8")
   pluginJars.from(tasks.shadowJar.flatMap { it.archiveFile })
   runDirectory = layout.projectDirectory.dir("run1_21_8")
+  jvmArgs = listOf<String>("-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005")
   systemProperties["Paper.IgnoreJavaVersion"] = true
 }

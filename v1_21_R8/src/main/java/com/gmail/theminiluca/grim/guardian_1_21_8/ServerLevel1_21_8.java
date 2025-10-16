@@ -24,13 +24,22 @@ public class ServerLevel1_21_8 extends ServerLevel {
         this.serverLevel = ((CraftWorld) world).getHandle();
     }
 
+
     @Override
-    public void destroyBlockProgress(int breakerId, @NotNull Vector3i pos, int progress) {
-        serverLevel.destroyBlockProgress(breakerId, new BlockPos(pos.x, pos.y, pos.z), progress);
+    public void destroyBlockProgress(int breakerId, @NotNull Block pos, int progress) {
+        BlockPos blockPos = ((CraftBlock) pos).getPosition();
+        serverLevel.destroyBlockProgress(breakerId, blockPos, progress);
     }
-    public void cancelBlockProgress(int breakerId, @NotNull Vector3i pos) {
+    @Override
+    public void cancelBlockProgress(int breakerId, @NotNull Block pos) {
         destroyBlockProgress(breakerId, pos, -1);
     }
+
+    @Override
+    public int getMaxBuildHeight() {
+        return serverLevel.getMaxY();
+    }
+
     @Override
     public void levelEvent(Block block) {
         BlockState blockState = ((CraftBlock) block).getNMS();

@@ -6,10 +6,10 @@ import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSoundEffect;
 import com.gmail.theminiluca.grim.guardian.command.GrimGuardianCommand;
 import com.gmail.theminiluca.grim.guardian.controller.AttributeController;
-import com.gmail.theminiluca.grim.guardian.controller.BlockBreakController;
 import com.gmail.theminiluca.grim.guardian.hook.PaperHooks;
 import com.gmail.theminiluca.grim.guardian.hook.ServerLevel;
 import com.gmail.theminiluca.grim.guardian.hook.ServerPlayer;
+import com.gmail.theminiluca.grim.guardian.listener.BukkitListener;
 import com.gmail.theminiluca.grim.guardian.utils.config.ConfigYaml;
 import com.google.common.base.Preconditions;
 import lombok.Getter;
@@ -38,12 +38,10 @@ import java.util.logging.Level;
 public class GrimGuardian extends JavaPlugin implements Listener, PaperHooks{
 
 
+
+    public static boolean ENABLE = true;
     @Getter
     private static GrimGuardian instance;
-
-
-    @Getter
-    private BlockBreakController blockBreakController;
 
 
     @Override
@@ -71,9 +69,6 @@ public class GrimGuardian extends JavaPlugin implements Listener, PaperHooks{
 
     @Override
     public void onLoad() {
-        blockBreakController = new BlockBreakController();
-        PacketEvents.getAPI().getEventManager().registerListener(blockBreakController,
-                PacketListenerPriority.HIGHEST);
         PacketEvents.getAPI().getEventManager().registerListener(new AttributeController(),
                 PacketListenerPriority.HIGHEST);
     }
@@ -82,8 +77,7 @@ public class GrimGuardian extends JavaPlugin implements Listener, PaperHooks{
     public void onEnable() {
         instance = this;
         getServer().getPluginManager().registerEvents(this, getInstance());
-        getServer().getPluginManager().registerEvents(blockBreakController, getInstance());
-//        new ConfigHandler(this);
+        getServer().getPluginManager().registerEvents(new BukkitListener(), getInstance());
 
         try {
             ConfigYaml.getInstance().load();

@@ -18,7 +18,9 @@ public abstract class ServerLevel {
 
     public abstract void levelEvent(Block block);
 
-    public abstract void destroyBlockProgress(int breakerId, @NotNull Vector3i pos, int progress);
+    public abstract void destroyBlockProgress(int breakerId, @NotNull Block pos, int progress);
 
-    public abstract void cancelBlockProgress(int breakerId, @NotNull Vector3i pos);
+    public abstract void cancelBlockProgress(int breakerId, @NotNull Block pos);
+
+    public abstract int getMaxBuildHeight();
 }
