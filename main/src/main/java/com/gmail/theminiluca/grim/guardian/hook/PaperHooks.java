@@ -8,6 +8,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
 
 
 public interface PaperHooks {
@@ -20,7 +22,7 @@ public interface PaperHooks {
     }
 
     @Slf4j
-    final class Holder {
+    final class Holder implements PaperHooks{
         private static final PaperHooks INSTANCE;
 
         static {
@@ -50,6 +52,16 @@ public interface PaperHooks {
             } catch (final Throwable e) {
                 return null;
             }
+        }
+
+        @Override
+        public ServerPlayer getServerPlayer(@NotNull Player player) {
+            return null;
+        }
+
+        @Override
+        public ServerLevel getServerLevel(@NotNull World world) {
+            return null;
         }
     }
 }

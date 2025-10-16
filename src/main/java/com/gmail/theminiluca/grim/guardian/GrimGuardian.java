@@ -2,6 +2,7 @@ package com.gmail.theminiluca.grim.guardian;
 
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.event.PacketListenerPriority;
+import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSoundEffect;
 import com.gmail.theminiluca.grim.guardian.command.GrimGuardianCommand;
 import com.gmail.theminiluca.grim.guardian.controller.AttributeController;
@@ -10,6 +11,7 @@ import com.gmail.theminiluca.grim.guardian.hook.PaperHooks;
 import com.gmail.theminiluca.grim.guardian.hook.ServerLevel;
 import com.gmail.theminiluca.grim.guardian.hook.ServerPlayer;
 import com.gmail.theminiluca.grim.guardian.utils.config.ConfigYaml;
+import com.google.common.base.Preconditions;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +26,10 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.logging.Level;
 
 @Getter
@@ -43,12 +48,24 @@ public class GrimGuardian extends JavaPlugin implements Listener, PaperHooks{
 
     @Override
     public ServerPlayer getServerPlayer(@NotNull Player player) {
-        return PaperHooks.get().getServerPlayer(player);
+        return getServerPlayer(player.getUniqueId());
     }
+    public ServerPlayer getServerPlayer(@NotNull User user) {
+        return getServerPlayer(user.getUUID());
+    }
+
+    public ServerPlayer getServerPlayer(@NotNull UUID uniqueId) {
+        Player player = Bukkit.getPlayer(uniqueId);
+        Preconditions.checkNotNull(player);
+        return players.computeIfAbsent(player, k -> PaperHooks.get().getServerPlayer(player));
+    }
+
+    private @NotNull Map<UUID, ServerLevel> worlds = new HashMap<>();
+    private @NotNull Map<Player, ServerPlayer> players = new HashMap<>();
 
     @Override
     public ServerLevel getServerLevel(@NotNull World world) {
-        return PaperHooks.get().getServerLevel(world);
+        return worlds.computeIfAbsent(world.getUID(), k -> PaperHooks.get().getServerLevel(world));
     }
 
 

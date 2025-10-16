@@ -35,6 +35,15 @@ repositories {
   }
 }
 
+subprojects {
+  apply(plugin = "java")
+  repositories {
+    maven("https://repo.codemc.io/repository/maven-releases/")
+  }
+  dependencies {
+    compileOnly("com.github.retrooper:packetevents-spigot:2.9.3")
+  }
+}
 publishing {
   publications {
     create<MavenPublication>("maven") {
