@@ -26,10 +26,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 import java.util.logging.Level;
 
 @Getter
@@ -59,7 +56,7 @@ public class GrimGuardian extends JavaPlugin implements Listener, PaperHooks{
     }
 
     private @NotNull Map<UUID, ServerLevel> worlds = new HashMap<>();
-    private @NotNull Map<Player, ServerPlayer> players = new HashMap<>();
+    private @NotNull Map<Player, ServerPlayer> players = new WeakHashMap<>();
 
     @Override
     public ServerLevel getServerLevel(@NotNull World world) {

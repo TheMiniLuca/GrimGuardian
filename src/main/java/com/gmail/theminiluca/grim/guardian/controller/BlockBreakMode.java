@@ -28,6 +28,7 @@ import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.lang.ref.Reference;
 import java.util.Objects;
 
 import static com.gmail.theminiluca.grim.guardian.listener.BukkitListener.BLOCK_BREAK_MODE_MAP;
@@ -63,12 +64,11 @@ public class BlockBreakMode {
         this.block = block;
         itemStack = player.getInventory().getItemInMainHand();
         packetItemStack = SpigotConversionUtil.fromBukkitItemStack(itemStack);
-        this.blockBreakSpeed = BlockBreakSpeed.getDefaultBreakTick(player, block, packetItemStack);
+        this.blockBreakSpeed = getBlockBreakSpeed();
         this.grimPlayer = Objects.requireNonNull(GrimAPI.INSTANCE.getPlayerDataManager()
                 .getPlayer(player.getUniqueId()), "grimPlayer cannot be null");
         this.maxBuildHeight = serverLevel.getMaxBuildHeight();
         this.blockHardness = getBlockHardness();
-        
     }
 
     public void cancel() {
@@ -134,6 +134,10 @@ public class BlockBreakMode {
         return block.getType().getHardness();
     }
 
+    protected @NotNull BlockBreakSpeed getBlockBreakSpeed() {
+        return BlockBreakSpeed.getVanillaBlockBreakSpeed(player, block, packetItemStack);
+    }
+
     protected byte getProgress() {
         return (byte) ((totalProgress / ((((float) blockBreakSpeed.getTick()) + 6.0F))) * 10);
     }
@@ -183,50 +187,52 @@ public class BlockBreakMode {
                     BlockBreakMode.this.cancel();
                     return;
                 }
-
-                byte progress = getProgress();
-                BlockImpactEvent blockImpactEvent = new BlockImpactEvent(player, block, BlockFace.valueOf(event.getBlockFace().name()), player.getInventory().getItemInMainHand(), blockBreakSpeed.isInstantBreak());
-                blockImpactEvent.callEvent();
-                if (!blockImpactEvent.isCancelled())
-//                    destroyBlockProgress(progress);
-                    if (backProgress != progress) {
-                        destroyBlockProgress(progress);
-                    }
-
-                tickProgress = defaultWorkTime();
-                tickProgress *= multiplyHaste();
-                tickProgress *= multiplyMiningFatigue();
-                if (!grimPlayer.packetStateData.packetPlayerOnGround) {
-                    tickProgress *= multiplyOffGround();
-                }
-                if (grimPlayer.fluidOnEyes == FluidTag.WATER) {
-                    if (grimPlayer.getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_21)
-                            && PacketEvents.getAPI().getServerManager().getVersion().isNewerThanOrEquals(ServerVersion.V_1_21)) {
-                        tickProgress *= multiplyAttribute();
-                    } else {
-                        if (EnchantmentHelper.getMaximumEnchantLevel(grimPlayer.getInventory(), EnchantmentTypes.AQUA_AFFINITY, ac.grim.grimac.shaded.com.github.retrooper.packetevents.PacketEvents
-                                .getAPI().getServerManager().getVersion().toClientVersion()) == 0) {
-                            tickProgress *= multiplyAquaAffinity();
-                        }
-                    }
-                }
-                tickProgress *= multiplyExtra();
-                if (!blockImpactEvent.isCancelled()) setTotalProgress();
-                backProgress = progress;
-
-                if ((progress >= requiredProgress() || blockImpactEvent.isInstantBreak()) && !blockImpactEvent.isCancelled()) {
-                    if (!serverPlayer.canInteractWithBlock(block, 1.0D)) {
-                        return;
-                    }
-                    BlockBreakMode.this.cancel();
-                    ServerLevel world = GrimGuardian.getInstance().getServerLevel(player.getWorld());
-                    world.levelEvent(block);
-                    if (!blockBreakSpeed.isCorrectToolForDrop())
-                        block.getDrops().clear();
-                    player.breakBlock(block);
-
-                }
+                update();
             }
         }.runTaskTimer(GrimGuardian.getInstance(), 0L, 1L);
+    }
+
+    public void update() {
+        byte progress = getProgress();
+        BlockImpactEvent blockImpactEvent = new BlockImpactEvent(player, block, BlockFace.valueOf(event.getBlockFace().name()), player.getInventory().getItemInMainHand(), blockBreakSpeed.isInstantBreak());
+        blockImpactEvent.callEvent();
+        if (!blockImpactEvent.isCancelled())
+            if (backProgress != progress) {
+                destroyBlockProgress(progress);
+            }
+
+        tickProgress = defaultWorkTime();
+        tickProgress *= multiplyHaste();
+        tickProgress *= multiplyMiningFatigue();
+        if (!grimPlayer.packetStateData.packetPlayerOnGround) {
+            tickProgress *= multiplyOffGround();
+        }
+        if (grimPlayer.fluidOnEyes == FluidTag.WATER) {
+            if (grimPlayer.getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_21)
+                    && PacketEvents.getAPI().getServerManager().getVersion().isNewerThanOrEquals(ServerVersion.V_1_21)) {
+                tickProgress *= multiplyAttribute();
+            } else {
+                if (EnchantmentHelper.getMaximumEnchantLevel(grimPlayer.getInventory(), EnchantmentTypes.AQUA_AFFINITY, ac.grim.grimac.shaded.com.github.retrooper.packetevents.PacketEvents
+                        .getAPI().getServerManager().getVersion().toClientVersion()) == 0) {
+                    tickProgress *= multiplyAquaAffinity();
+                }
+            }
+        }
+        tickProgress *= multiplyExtra();
+        if (!blockImpactEvent.isCancelled()) setTotalProgress();
+        backProgress = progress;
+
+        if ((progress >= requiredProgress() || blockImpactEvent.isInstantBreak()) && !blockImpactEvent.isCancelled()) {
+            if (!serverPlayer.canInteractWithBlock(block, 1.0D)) {
+                return;
+            }
+            BlockBreakMode.this.cancel();
+            ServerLevel world = GrimGuardian.getInstance().getServerLevel(player.getWorld());
+            world.levelEvent(block);
+            if (!blockBreakSpeed.isCorrectToolForDrop())
+                block.getDrops().clear();
+            player.breakBlock(block);
+
+        }
     }
 }

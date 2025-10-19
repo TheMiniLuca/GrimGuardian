@@ -4,7 +4,6 @@ import ac.grim.grimac.GrimAPI;
 import ac.grim.grimac.player.GrimPlayer;
 import ac.grim.grimac.shaded.com.github.retrooper.packetevents.protocol.attribute.Attributes;
 import ac.grim.grimac.shaded.com.github.retrooper.packetevents.protocol.player.ClientVersion;
-import com.destroystokyo.paper.MaterialSetTag;
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.manager.server.ServerVersion;
 import com.github.retrooper.packetevents.protocol.item.ItemStack;
@@ -58,8 +57,7 @@ public class BlockBreakSpeed {
         return new BlockBreakSpeed(tick, requiresCorrectTool);
     }
 
-
-    public static BlockBreakSpeed getDefaultBreakTick(Player player, Block block, ItemStack itemStack) {
+    public static BlockBreakSpeed getVanillaBlockBreakSpeed(@NotNull Player player, @NotNull Block block, @NotNull ItemStack itemStack) {
         if (block.getType().getHardness() == 0.0F) return instant(true);
         if (block.getType().getHardness() < 0.0F) return indestructible();
         WrappedBlockState blockState = SpigotConversionUtil.fromBukkitBlockData(block.getBlockData());
