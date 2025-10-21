@@ -1,5 +1,6 @@
 package com.gmail.theminiluca.grim.guardian.event;
 
+import com.gmail.theminiluca.grim.guardian.controller.BlockBreakMode;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.block.Block;
@@ -21,16 +22,18 @@ public class BlockImpactEvent extends BlockEvent implements Cancellable {
     private boolean cancelled;
     private final @NotNull ItemStack itemstack;
     private final @NotNull BlockFace blockFace;
+    private final @NotNull BlockBreakMode mode;
 
 
     @ApiStatus.Internal
-    public BlockImpactEvent(@NotNull Player player, @NotNull Block block, @NotNull BlockFace blockFace, @NotNull ItemStack itemInHand, boolean instaBreak) {
+    public BlockImpactEvent(@NotNull Player player, @NotNull Block block, @NotNull BlockFace blockFace, @NotNull ItemStack itemInHand, boolean instaBreak, BlockBreakMode mode) {
         super(block);
         this.blockFace = blockFace;
         this.instantBreak = instaBreak;
         this.player = player;
         this.itemstack = itemInHand;
         this.cancelled = false;
+        this.mode = mode;
     }
 
 

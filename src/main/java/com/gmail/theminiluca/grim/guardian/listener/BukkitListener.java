@@ -2,9 +2,9 @@ package com.gmail.theminiluca.grim.guardian.listener;
 
 import com.gmail.theminiluca.grim.guardian.GrimGuardian;
 import com.gmail.theminiluca.grim.guardian.controller.BlockBreakMode;
+import com.gmail.theminiluca.grim.guardian.event.BlockImpactEvent;
 import com.gmail.theminiluca.grim.guardian.hook.ServerLevel;
 import com.gmail.theminiluca.grim.guardian.hook.ServerPlayer;
-import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -45,5 +45,11 @@ public class BukkitListener implements Listener {
             mode.run();
             BLOCK_BREAK_MODE_MAP.put(player.getUniqueId(), mode);
         }
+    }
+
+    @EventHandler
+    public void onBlockImpact(BlockImpactEvent event) {
+//        event.setInstantBreak(true);
+//        event.setCancelled(true);
     }
 }
