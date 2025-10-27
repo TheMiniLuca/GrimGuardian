@@ -11,6 +11,7 @@ import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.manager.server.ServerVersion;
 import com.github.retrooper.packetevents.protocol.item.ItemStack;
 import com.gmail.theminiluca.grim.guardian.GrimGuardian;
+import com.gmail.theminiluca.grim.guardian.controller.speed.BlockBreakSpeed;
 import com.gmail.theminiluca.grim.guardian.event.BlockImpactEvent;
 import com.gmail.theminiluca.grim.guardian.hook.ServerLevel;
 import com.gmail.theminiluca.grim.guardian.hook.ServerPlayer;
@@ -69,7 +70,7 @@ public class BlockBreakMode {
         this.grimPlayer = Objects.requireNonNull(GrimAPI.INSTANCE.getPlayerDataManager()
                 .getPlayer(player.getUniqueId()), "grimPlayer cannot be null");
         this.maxBuildHeight = serverLevel.getMaxBuildHeight();
-        this.blockHardness = getBlockHardness();
+        this.blockHardness = blockhardness();
     }
 
     public void cancel() {
@@ -79,11 +80,11 @@ public class BlockBreakMode {
     }
 
     public void destroyBlockProgress(final int progress) {
-        serverLevel.destroyBlockProgress(serverPlayer.getPlayer().getEntityId() << 5, block, progress);
+        serverLevel.destroyBlockProgress(serverPlayer.getPlayer().getEntityId() +1, block, progress);
     }
     protected void cancelTask() {
         if (bukkitTask == null) return;
-        serverLevel.cancelBlockProgress(player.getEntityId() << 5, block);
+        serverLevel.cancelBlockProgress(player.getEntityId() +1, block);
         bukkitTask.cancel();
         bukkitTask = null;
 //        Bukkit.getScheduler().getMainThreadExecutor(GrimGuardian.getInstance()).execute(() -> {
@@ -131,7 +132,7 @@ public class BlockBreakMode {
         return block.getType().isAir();
     }
 
-    protected float getBlockHardness() {
+    protected float blockhardness() {
         return block.getType().getHardness();
     }
 
@@ -193,6 +194,9 @@ public class BlockBreakMode {
         }.runTaskTimer(GrimGuardian.getInstance(), 0L, 1L);
     }
 
+    public void breakBlock() {
+        player.breakBlock(block);
+    }
     public void update() {
         byte progress = getProgress();
         BlockImpactEvent blockImpactEvent = new BlockImpactEvent(player, block, BlockFace.valueOf(event.getBlockFace().name()), player.getInventory().getItemInMainHand(), blockBreakSpeed.isInstantBreak(), this);
@@ -232,7 +236,7 @@ public class BlockBreakMode {
             world.levelEvent(block);
             if (!blockBreakSpeed.isCorrectToolForDrop())
                 block.getDrops().clear();
-            player.breakBlock(block);
+            breakBlock();
 
         }
     }

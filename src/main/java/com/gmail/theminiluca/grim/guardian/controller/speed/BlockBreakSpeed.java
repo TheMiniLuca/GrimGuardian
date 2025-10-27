@@ -1,4 +1,4 @@
-package com.gmail.theminiluca.grim.guardian.controller;
+package com.gmail.theminiluca.grim.guardian.controller.speed;
 
 import ac.grim.grimac.GrimAPI;
 import ac.grim.grimac.player.GrimPlayer;

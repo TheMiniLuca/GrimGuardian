@@ -7,6 +7,7 @@ import com.github.retrooper.packetevents.event.PacketSendEvent;
 import com.github.retrooper.packetevents.manager.server.ServerVersion;
 import com.github.retrooper.packetevents.protocol.attribute.Attributes;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
+import com.github.retrooper.packetevents.protocol.player.ClientVersion;
 import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerChatMessage;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSoundEffect;
@@ -42,8 +43,9 @@ public class AttributeController implements PacketListener {
             Iterator<WrapperPlayServerUpdateAttributes.Property> iterator = packet.getProperties().iterator();
             while (iterator.hasNext()) {
                 WrapperPlayServerUpdateAttributes.Property attributes = iterator.next();
-                if (!(Attributes.BLOCK_BREAK_SPEED.equals(attributes.getAttribute()))) continue;
-                attributes.setValue(0.0F);
+
+                if (Attributes.BLOCK_BREAK_SPEED.equals(attributes.getAttribute())) attributes.setValue(0.0F);
+//                if (Attributes.BLOCK_INTERACTION_RANGE.equals(attributes.getAttribute())) attributes.setValue(0.0F);
 //                try {
 //                    if (grimPlayer.compensatedEntities.self
 //                            .getAttributeValue(attributes.getAttribute()) == 0.0F) {

@@ -55,8 +55,8 @@ public class GrimGuardian extends JavaPlugin implements Listener, PaperHooks{
         return players.computeIfAbsent(player, k -> PaperHooks.get().getServerPlayer(player));
     }
 
-    private @NotNull Map<World, ServerLevel> worlds = new WeakHashMap<>();
-    private @NotNull Map<Player, ServerPlayer> players = new WeakHashMap<>();
+    private final @NotNull Map<World, ServerLevel> worlds = new WeakHashMap<>();
+    private final @NotNull Map<Player, ServerPlayer> players = new WeakHashMap<>();
 
     @Override
     public ServerLevel getServerLevel(@NotNull World world) {
