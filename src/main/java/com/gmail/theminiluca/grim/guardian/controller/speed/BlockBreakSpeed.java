@@ -57,53 +57,22 @@ public class BlockBreakSpeed {
         return new BlockBreakSpeed(tick, requiresCorrectTool);
     }
 
-    public static BlockBreakSpeed getVanillaBlockBreakSpeed(@NotNull Player player, @NotNull Block block, @NotNull ItemStack itemStack) {
-        if (block.getType().getHardness() == 0.0F) return instant(true);
-        if (block.getType().getHardness() < 0.0F) return indestructible();
+    public static BlockBreakSpeed getVanillaBlockBreakSpeed(final @NotNull Player player, final @NotNull Block block,
+                                                            final @NotNull ItemStack itemStack, final float blockHardness, @NotNull CorrectToolChecker correctToolChecker) {
+        if (blockHardness == 0.0F) return instant(true);
+        if (blockHardness < 0.0F) return indestructible();
         WrappedBlockState blockState = SpigotConversionUtil.fromBukkitBlockData(block.getBlockData());
         boolean isCorrectToolForDrop;
 
-        float speedMultiplier = (float) DEFAULT_MULTIPLIER;
-        float hardness = block.getType().getHardness();
-        int tier;
+        float speedMultiplier;
+
+        CorrectToolChecker.Result result = correctToolChecker.getCorrectToolResult();
+        isCorrectToolForDrop = result.isCorrectTool();
+        speedMultiplier = result.getSpeedMultiplier();
 
         // 1.13 and below need their own huge methods to support this...
 
 
-        @Nullable ToolRegistry toolRegistry = ConfigYaml.getInstance().getToolRegistry(SpigotConversionUtil.toBukkitItemStack(itemStack));
-        boolean correct = false;
-        if (itemStack.getType().hasAttribute(ItemTypes.ItemAttribute.AXE)) {
-            correct = BlockTags.MINEABLE_AXE.contains(blockState.getType());
-        } else if (itemStack.getType().hasAttribute(ItemTypes.ItemAttribute.PICKAXE)) {
-            correct = BlockTags.MINEABLE_PICKAXE.contains(blockState.getType());
-        } else if (itemStack.getType().hasAttribute(ItemTypes.ItemAttribute.SHOVEL)) {
-            correct = BlockTags.MINEABLE_SHOVEL.contains(blockState.getType());
-        } else if (itemStack.getType().hasAttribute(ItemTypes.ItemAttribute.HOE)) {
-            correct = BlockTags.MINEABLE_HOE.contains(blockState.getType());
-        }
-        if (correct) {
-            speedMultiplier = (float) (toolRegistry == null ? DEFAULT_MULTIPLIER : toolRegistry.getMultiplier());
-            tier = (toolRegistry == null ? ToolRegistry.DEFAULT_TIER : toolRegistry.getTier());
-            if (tier < 3 && BlockTags.NEEDS_DIAMOND_TOOL.contains(blockState.getType())) {
-                correct = false;
-            } else if (tier < 2 && BlockTags.NEEDS_IRON_TOOL.contains(blockState.getType())) {
-                correct = false;
-            } else if (tier < 1 && BlockTags.NEEDS_STONE_TOOL.contains(blockState.getType())) {
-                correct = false;
-            }
-        }
-        Boolean flag = toolRegistry != null ? toolRegistry.isCorrectForDrops(blockState.getType()) : null;
-        if (flag == null) {
-            isCorrectToolForDrop = correct;
-        } else {
-            isCorrectToolForDrop = flag;
-        }
-
-        BlockRegistry registry = toolRegistry == null ? null : toolRegistry.getBlockRegistry(blockState.getType());
-        if (registry != null) {
-            isCorrectToolForDrop = registry.isCorrectForDrops();
-            speedMultiplier = (float) registry.getMultiplier();
-        }
 
 
 //        @NotNull Optional<com.github.retrooper.packetevents.protocol.component.builtin.item.ItemTool> component =
@@ -152,16 +121,16 @@ public class BlockBreakSpeed {
         if (speedMultiplier == 0.0F) {
             return indestructible();
         }
-        float damage = speedMultiplier / hardness;
+        float damage = speedMultiplier / blockHardness;
 
         boolean canHarvest = !blockState.getType().isRequiresCorrectTool() || isCorrectToolForDrop;
-        if (ConfigYaml.getInstance().getFormula(Formula.INSTANT).evaluate(grimPlayer, block.getType().getHardness()) == 1d && isCorrectToolForDrop && fatigue == null) {
+        if (ConfigYaml.getInstance().getFormula(Formula.INSTANT).evaluate(grimPlayer, blockHardness) == 1d && isCorrectToolForDrop && fatigue == null) {
             return instant(true);
         }
         if (canHarvest) {
-            damage /= (float) ConfigYaml.getInstance().getFormula(Formula.CORRECT).evaluate(grimPlayer, block.getType().getHardness());
+            damage /= (float) ConfigYaml.getInstance().getFormula(Formula.CORRECT).evaluate(grimPlayer, blockHardness);
         } else {
-            damage /= (float) ConfigYaml.getInstance().getFormula(Formula.INCORRECT).evaluate(grimPlayer, block.getType().getHardness());
+            damage /= (float) ConfigYaml.getInstance().getFormula(Formula.INCORRECT).evaluate(grimPlayer, blockHardness);
         }
         return breakable(Math.round(1 / damage), isCorrectToolForDrop);
     }

@@ -12,6 +12,7 @@ import com.github.retrooper.packetevents.manager.server.ServerVersion;
 import com.github.retrooper.packetevents.protocol.item.ItemStack;
 import com.gmail.theminiluca.grim.guardian.GrimGuardian;
 import com.gmail.theminiluca.grim.guardian.controller.speed.BlockBreakSpeed;
+import com.gmail.theminiluca.grim.guardian.controller.speed.CorrectToolChecker;
 import com.gmail.theminiluca.grim.guardian.event.BlockImpactEvent;
 import com.gmail.theminiluca.grim.guardian.hook.ServerLevel;
 import com.gmail.theminiluca.grim.guardian.hook.ServerPlayer;
@@ -49,6 +50,7 @@ public class BlockBreakMode {
     protected final @NotNull ItemStack packetItemStack;
     protected final int maxBuildHeight;
     protected final float blockHardness;
+    protected final CorrectToolChecker correctToolChecker;
 
 
     protected float totalProgress = 0;
@@ -56,7 +58,8 @@ public class BlockBreakMode {
     protected byte backProgress = 0;
     protected @Nullable BukkitTask bukkitTask;
 
-    public BlockBreakMode(@NotNull ServerPlayer serverPlayer, @NotNull ServerLevel serverLevel, @NotNull PlayerInteractEvent event) {
+    public BlockBreakMode(@NotNull ServerPlayer serverPlayer, @NotNull ServerLevel serverLevel,
+                          @NotNull PlayerInteractEvent event, float blockHardness, @NotNull CorrectToolChecker correctToolChecker) {
         this.serverPlayer = serverPlayer;
         this.player = serverPlayer.getPlayer();
         this.serverLevel = serverLevel;
@@ -64,19 +67,24 @@ public class BlockBreakMode {
         @Nullable Block block = event.getClickedBlock();
         Preconditions.checkNotNull(block);
         this.block = block;
+        this.correctToolChecker = correctToolChecker;
         itemStack = player.getInventory().getItemInMainHand();
         packetItemStack = SpigotConversionUtil.fromBukkitItemStack(itemStack);
+        this.blockHardness = blockHardness;
         this.blockBreakSpeed = createBlockBreakSpeed();
         this.grimPlayer = Objects.requireNonNull(GrimAPI.INSTANCE.getPlayerDataManager()
                 .getPlayer(player.getUniqueId()), "grimPlayer cannot be null");
         this.maxBuildHeight = serverLevel.getMaxBuildHeight();
-        this.blockHardness = blockhardness();
     }
 
     public void cancel() {
         cancelTask();
         BLOCK_BREAK_MODE_MAP.remove(player.getUniqueId());
 
+    }
+
+    protected @NotNull BlockBreakSpeed createBlockBreakSpeed() {
+        return BlockBreakSpeed.getVanillaBlockBreakSpeed(player, block, packetItemStack, blockHardness, correctToolChecker);
     }
 
     public void destroyBlockProgress(final int progress) {
@@ -136,9 +144,6 @@ public class BlockBreakMode {
         return block.getType().getHardness();
     }
 
-    protected @NotNull BlockBreakSpeed createBlockBreakSpeed() {
-        return BlockBreakSpeed.getVanillaBlockBreakSpeed(player, block, packetItemStack);
-    }
 
     protected byte getProgress() {
         return (byte) ((totalProgress / ((((float) blockBreakSpeed.getTick()) + 6.0F))) * 10);
