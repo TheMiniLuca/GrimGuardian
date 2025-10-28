@@ -25,6 +25,7 @@ import com.google.common.base.Preconditions;
 import io.github.retrooper.packetevents.util.SpigotConversionUtil;
 import lombok.Getter;
 import lombok.Setter;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -48,7 +49,7 @@ public class BlockBreakMode {
 
 
     private final @NotNull BlockBreakContext context;
-    private final @NotNull BlockBreakSpeed blockBreakSpeed;
+    private @Nullable BlockBreakSpeed blockBreakSpeed;
     protected float totalProgress = 0;
     protected float tickProgress = 0;
     protected byte backProgress = 0;
@@ -56,7 +57,6 @@ public class BlockBreakMode {
 
     public BlockBreakMode(@NotNull BlockBreakContext context) {
         this.context  =context;
-        this.blockBreakSpeed = createBlockBreakSpeed();
     }
 
     public void cancel() {
@@ -66,7 +66,7 @@ public class BlockBreakMode {
     }
 
     protected @NotNull BlockBreakSpeed createBlockBreakSpeed() {
-        return BlockBreakSpeed.getVanillaBlockBreakSpeed(, block, packetItemStack, blockHardness, correctToolChecker);
+        return BlockBreakSpeed.getVanillaBlockBreakSpeed(context);
     }
 
 //    public void destroyBlockProgress(final int progress) {
@@ -92,17 +92,17 @@ public class BlockBreakMode {
         for (User user : PacketEvents.getAPI().getProtocolManager().getUsers()) {
             if (user.getUUID() == null) continue;
             Player player = Bukkit.getPlayer(user.getUUID());
-            if (player == null || player.getWorld() != world) continue;
+            if (player == null || player.getWorld() != context.world) continue;
 
-            double d0 = vector3i.getX() - player.getLocation().getX();
-            double d1 = vector3i.getY() - player.getLocation().getY();
-            double d2 = vector3i.getZ() - player.getLocation().getZ();
+            double d0 = context.vector3i.getX() - player.getLocation().getX();
+            double d1 = context.vector3i.getY() - player.getLocation().getY();
+            double d2 = context.vector3i.getZ() - player.getLocation().getZ();
             double distanceSquared = d0 * d0 + d1 * d1 + d2 * d2;
 
             if (distanceSquared >= 1024.0D) continue;
-            if (!player.canSee(this.player)) continue;
+            if (!player.canSee(context.player)) continue;
 
-            user.sendPacket(new WrapperPlayServerBlockBreakAnimation(user.getEntityId() + 1, vector3i, (byte) progress));
+            user.sendPacket(new WrapperPlayServerBlockBreakAnimation(user.getEntityId() + 1, context.vector3i, (byte) progress));
         }
     }
 
@@ -131,19 +131,19 @@ public class BlockBreakMode {
     }
 
     protected boolean isPlayerOffline() {
-        return !player.isOnline() || !grimPlayer.platformPlayer.isOnline();
+        return !context.player.isOnline() || !context.grimPlayer.platformPlayer.isOnline();
     }
 
     protected boolean isItemChanged() {
-        return player.getInventory().getItemInMainHand() == itemStack;
+        return context.player.getInventory().getItemInMainHand() == context.itemStack;
     }
 
     protected boolean isBlockGone() {
-        return block.getType().isAir();
+        return context.block.getType().isAir();
     }
 
     protected float blockhardness() {
-        return block.getType().getHardness();
+        return context.block.getType().getHardness();
     }
 
 
@@ -152,11 +152,11 @@ public class BlockBreakMode {
     }
 
     protected float multiplyHaste() {
-        return (float) ConfigYaml.getInstance().getFormula(Formula.HASTE).evaluate(grimPlayer, blockHardness);
+        return (float) ConfigYaml.getInstance().getFormula(Formula.HASTE).evaluate(context.grimPlayer, context.blockHardness);
     }
 
     protected float multiplyMiningFatigue() {
-        return (float) ConfigYaml.getInstance().getFormula(Formula.MINING_FATIGUE).evaluate(grimPlayer, blockHardness);
+        return (float) ConfigYaml.getInstance().getFormula(Formula.MINING_FATIGUE).evaluate(context.grimPlayer, context.blockHardness);
     }
 
     protected float multiplyOffGround() {
@@ -164,7 +164,7 @@ public class BlockBreakMode {
     }
 
     protected float multiplyAttribute() {
-        return (float) grimPlayer.compensatedEntities.self.getAttributeValue(Attributes.BLOCK_BREAK_SPEED);
+        return (float) context.grimPlayer.compensatedEntities.self.getAttributeValue(Attributes.BLOCK_BREAK_SPEED);
     }
 
     protected float multiplyExtra() {
@@ -188,10 +188,13 @@ public class BlockBreakMode {
 
     public void run() {
         cancel();
+        bukkitTask = null;
         bukkitTask = new BukkitRunnable() {
 
             @Override
             public void run() {
+                if (BlockBreakMode.this.blockBreakSpeed == null)
+                    BlockBreakMode.this.blockBreakSpeed = createBlockBreakSpeed();
                 if (checkBreakConditions()) {
                     BlockBreakMode.this.cancel();
                     return;
@@ -199,16 +202,18 @@ public class BlockBreakMode {
                 update();
             }
         }.runTaskTimerAsynchronously(GrimGuardian.getInstance(), 0L, 1L);
+//        context.player.sendMessage("wait blocking");
+//        context.player.sendMessage("blocking");
     }
 
     public void breakBlock() {
         Bukkit.getScheduler().getMainThreadExecutor(GrimGuardian.getInstance()).execute(() -> {
-            player.breakBlock(block);
+            context.player.breakBlock(context.block);
         });
     }
     public void update() {
         byte progress = getProgress();
-        BlockImpactEvent blockImpactEvent = new BlockImpactEvent(player, block, BlockFace.valueOf(event.getBlockFace().name()), player.getInventory().getItemInMainHand(), blockBreakSpeed.isInstantBreak(), this);
+        BlockImpactEvent blockImpactEvent = new BlockImpactEvent(context.player, context.block, BlockFace.valueOf(context.event.getBlockFace().name()), context.player.getInventory().getItemInMainHand(), blockBreakSpeed.isInstantBreak(), this);
         blockImpactEvent.callEvent();
         if (!blockImpactEvent.isCancelled())
             if (backProgress != progress) {
@@ -219,15 +224,15 @@ public class BlockBreakMode {
             tickProgress = defaultWorkTime();
             tickProgress *= multiplyHaste();
             tickProgress *= multiplyMiningFatigue();
-            if (!grimPlayer.packetStateData.packetPlayerOnGround) {
+            if (!context.grimPlayer.packetStateData.packetPlayerOnGround) {
                 tickProgress *= multiplyOffGround();
             }
-            if (grimPlayer.fluidOnEyes==FluidTag.WATER) {
-                if (grimPlayer.getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_21)
+            if (context.grimPlayer.fluidOnEyes==FluidTag.WATER) {
+                if (context.grimPlayer.getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_21)
                         && PacketEvents.getAPI().getServerManager().getVersion().isNewerThanOrEquals(ServerVersion.V_1_21)) {
                     tickProgress *= multiplyAttribute();
                 } else {
-                    if (EnchantmentHelper.getMaximumEnchantLevel(grimPlayer.getInventory(), EnchantmentTypes.AQUA_AFFINITY, ac.grim.grimac.shaded.com.github.retrooper.packetevents.PacketEvents
+                    if (EnchantmentHelper.getMaximumEnchantLevel(context.grimPlayer.getInventory(), EnchantmentTypes.AQUA_AFFINITY, ac.grim.grimac.shaded.com.github.retrooper.packetevents.PacketEvents
                             .getAPI().getServerManager().getVersion().toClientVersion())==0) {
                         tickProgress *= multiplyAquaAffinity();
                     }
@@ -237,15 +242,16 @@ public class BlockBreakMode {
             if (!blockImpactEvent.isCancelled()) setTotalProgress();
             backProgress = progress;
         }
+//        context.player.sendMessage("%.2f/%d".formatted(totalProgress, blockBreakSpeed.getTick()));
         if ((progress >= requiredProgress() || blockImpactEvent.isInstantBreak()) && !blockImpactEvent.isCancelled()) {
-            if (!serverPlayer.canInteractWithBlock(block, 1.0D)) {
+            if (!context.serverPlayer.canInteractWithBlock(context.block, 1.0D)) {
                 return;
             }
             BlockBreakMode.this.cancel();
-            ServerLevel world = GrimGuardian.getInstance().getServerLevel(player.getWorld());
-            world.levelEvent(block);
+            ServerLevel world = GrimGuardian.getInstance().getServerLevel(context.player.getWorld());
+            world.levelEvent(context.block);
             if (!blockBreakSpeed.isCorrectToolForDrop())
-                block.getDrops().clear();
+                context.block.getDrops().clear();
             breakBlock();
 
         }

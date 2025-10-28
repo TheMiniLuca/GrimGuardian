@@ -1,6 +1,7 @@
 package com.gmail.theminiluca.grim.guardian.event;
 
 import com.github.retrooper.packetevents.protocol.item.ItemStack;
+import com.gmail.theminiluca.grim.guardian.controller.BlockBreakContext;
 import com.gmail.theminiluca.grim.guardian.controller.BlockBreakMode;
 import com.gmail.theminiluca.grim.guardian.controller.speed.CorrectToolChecker;
 import com.gmail.theminiluca.grim.guardian.hook.ServerLevel;
@@ -49,7 +50,7 @@ public class BlockBreakModeStartEvent extends Event {
 
     @Contract("->new")
     public BlockBreakMode getFinalBreakMode() {
-        return new BlockBreakMode(serverPlayer, serverLevel, interactEvent, blockHardness, toolChecker);
+        return new BlockBreakMode(new BlockBreakContext(serverPlayer, serverLevel, interactEvent, blockHardness, toolChecker));
     }
 
     public static @NotNull HandlerList getHandlerList() {

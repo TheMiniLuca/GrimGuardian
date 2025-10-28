@@ -99,26 +99,26 @@ public class BlockBreakSpeed {
 //                }
 //            }
 //        }
-        @NotNull final GrimPlayer grimPlayer = Objects.requireNonNull(GrimAPI.INSTANCE.getPlayerDataManager().getPlayer(player.getUniqueId()));
-        int digSpeed = itemStack.getEnchantmentLevel(EnchantmentTypes.BLOCK_EFFICIENCY, PacketEvents.getAPI().getServerManager().getVersion().toClientVersion());
+        @NotNull final GrimPlayer grimPlayer = Objects.requireNonNull(GrimAPI.INSTANCE.getPlayerDataManager().getPlayer(context.getPlayer().getUniqueId()));
+        int digSpeed = context.getPacketItemStack().getEnchantmentLevel(EnchantmentTypes.BLOCK_EFFICIENCY, PacketEvents.getAPI().getServerManager().getVersion().toClientVersion());
         if (speedMultiplier > 1.0f) {
             if (grimPlayer.getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_21) && PacketEvents.getAPI().getServerManager().getVersion().isNewerThanOrEquals(ServerVersion.V_1_21)) {
                 speedMultiplier += (float) grimPlayer.compensatedEntities.self.getAttributeValue(Attributes.MINING_EFFICIENCY);
             }
             if (digSpeed > 0) {
 
-                speedMultiplier += (float) ConfigYaml.getInstance().getFormula(Formula.EFFICIENCY).evaluate(grimPlayer, block.getType().getHardness());
+                speedMultiplier += (float) ConfigYaml.getInstance().getFormula(Formula.EFFICIENCY).evaluate(grimPlayer, blockHardness);
             }
         }
 
-        double blockBreak = GrimGuardian.getInstance().getServerPlayer(player).getBlockBreakSpeed();
+        double blockBreak = GrimGuardian.getInstance().getServerPlayer(context.getPlayer()).getBlockBreakSpeed();
         if (blockBreak == 0.0f) {
             return indestructible();
         }
         speedMultiplier *= (float) blockBreak;
 
 
-        PotionEffect fatigue = player.getPotionEffect(PotionEffectType.MINING_FATIGUE);
+        PotionEffect fatigue = context.getPlayer().getPotionEffect(PotionEffectType.MINING_FATIGUE);
         if (speedMultiplier == 0.0F) {
             return indestructible();
         }

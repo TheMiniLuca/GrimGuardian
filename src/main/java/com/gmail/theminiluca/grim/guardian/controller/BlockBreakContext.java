@@ -37,13 +37,8 @@ public class BlockBreakContext {
     protected final @NotNull ItemStack packetItemStack;
     protected final int maxBuildHeight;
     protected final float blockHardness;
-    protected final CorrectToolChecker correctToolChecker;
+    protected final @NotNull CorrectToolChecker correctToolChecker;
 
-
-    protected float totalProgress = 0;
-    protected float tickProgress = 0;
-    protected byte backProgress = 0;
-    protected @Nullable BukkitTask bukkitTask;
 
     public BlockBreakContext(@NotNull ServerPlayer serverPlayer, @NotNull ServerLevel serverLevel,
                           @NotNull PlayerInteractEvent event, float blockHardness, @NotNull CorrectToolChecker correctToolChecker) {
