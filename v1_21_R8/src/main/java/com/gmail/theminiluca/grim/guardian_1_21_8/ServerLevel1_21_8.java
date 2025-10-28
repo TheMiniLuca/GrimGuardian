@@ -28,7 +28,8 @@ public class ServerLevel1_21_8 extends ServerLevel {
     @Override
     public void destroyBlockProgress(int breakerId, @NotNull Block pos, int progress) {
         BlockPos blockPos = ((CraftBlock) pos).getPosition();
-        serverLevel.destroyBlockProgress(breakerId, blockPos, progress);
+//        serverLevel.destroyBlockProgress(breakerId, blockPos, progress);
+
     }
     @Override
     public void cancelBlockProgress(int breakerId, @NotNull Block pos) {

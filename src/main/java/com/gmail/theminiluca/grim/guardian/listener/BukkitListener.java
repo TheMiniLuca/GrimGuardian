@@ -23,11 +23,12 @@ import org.jetbrains.annotations.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static com.gmail.theminiluca.grim.guardian.GrimGuardian.ENABLE;
 
 public class BukkitListener implements Listener {
-    public static final @NotNull Map<UUID, BlockBreakMode> BLOCK_BREAK_MODE_MAP = new HashMap<>();
+    public static final @NotNull Map<UUID, BlockBreakMode> BLOCK_BREAK_MODE_MAP = new ConcurrentHashMap<>();
 
 //    @EventHandler
 //    public void onJoin(PlayerJoinEvent event) {

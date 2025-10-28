@@ -2,6 +2,16 @@ plugins {
   `my-conventions`
 }
 
+publishing {
+  publications {
+    create<MavenPublication>("maven") {
+      groupId = "com.gmail.theminiluca.grim.guardian"
+      artifactId = "grimguardian-main"
+      version = "1.0.0"
+      from(components["java"])
+    }
+  }
+}
 dependencies {
 
   compileOnly("io.papermc.paper:paper-api:1.21.1-R0.1-SNAPSHOT")

@@ -7,6 +7,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
+import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.block.BlockEvent;
 import org.bukkit.inventory.ItemStack;
@@ -15,9 +16,10 @@ import org.jetbrains.annotations.NotNull;
 
 @Getter
 @Setter
-public class BlockImpactEvent extends BlockEvent implements Cancellable {
+public class BlockImpactEvent extends Event implements Cancellable {
     private static final HandlerList handlers = new HandlerList();
     private final @NotNull Player player;
+    private final @NotNull Block block;
     private boolean instantBreak;
     private boolean cancelled;
     private final @NotNull ItemStack itemstack;
@@ -26,8 +28,9 @@ public class BlockImpactEvent extends BlockEvent implements Cancellable {
 
 
     @ApiStatus.Internal
-    public BlockImpactEvent(@NotNull Player player, @NotNull Block block, @NotNull BlockFace blockFace, @NotNull ItemStack itemInHand, boolean instaBreak, BlockBreakMode mode) {
-        super(block);
+    public BlockImpactEvent(@NotNull Player player, @NotNull Block block, @NotNull BlockFace blockFace, @NotNull ItemStack itemInHand, boolean instaBreak, @NotNull BlockBreakMode mode) {
+        super(true);
+        this.block = block;
         this.blockFace = blockFace;
         this.instantBreak = instaBreak;
         this.player = player;

@@ -12,6 +12,7 @@ import com.github.retrooper.packetevents.protocol.item.type.ItemTypes;
 import com.github.retrooper.packetevents.protocol.world.states.WrappedBlockState;
 import com.github.retrooper.packetevents.protocol.world.states.defaulttags.BlockTags;
 import com.gmail.theminiluca.grim.guardian.GrimGuardian;
+import com.gmail.theminiluca.grim.guardian.controller.BlockBreakContext;
 import com.gmail.theminiluca.grim.guardian.utils.config.ConfigYaml;
 import com.gmail.theminiluca.grim.guardian.utils.config.model.BlockRegistry;
 import com.gmail.theminiluca.grim.guardian.utils.config.model.ToolRegistry;
@@ -57,16 +58,16 @@ public class BlockBreakSpeed {
         return new BlockBreakSpeed(tick, requiresCorrectTool);
     }
 
-    public static BlockBreakSpeed getVanillaBlockBreakSpeed(final @NotNull Player player, final @NotNull Block block,
-                                                            final @NotNull ItemStack itemStack, final float blockHardness, @NotNull CorrectToolChecker correctToolChecker) {
+    public static BlockBreakSpeed getVanillaBlockBreakSpeed(@NotNull BlockBreakContext context) {
+        float blockHardness = context.getBlockHardness();
         if (blockHardness == 0.0F) return instant(true);
         if (blockHardness < 0.0F) return indestructible();
-        WrappedBlockState blockState = SpigotConversionUtil.fromBukkitBlockData(block.getBlockData());
+        WrappedBlockState blockState = SpigotConversionUtil.fromBukkitBlockData(context.getBlock().getBlockData());
         boolean isCorrectToolForDrop;
 
         float speedMultiplier;
 
-        CorrectToolChecker.Result result = correctToolChecker.getCorrectToolResult();
+        CorrectToolChecker.Result result = context.getCorrectToolChecker().getCorrectToolResult();
         isCorrectToolForDrop = result.isCorrectTool();
         speedMultiplier = result.getSpeedMultiplier();
 
