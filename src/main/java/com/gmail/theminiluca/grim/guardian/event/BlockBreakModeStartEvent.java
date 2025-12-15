@@ -9,10 +9,8 @@ import io.github.retrooper.packetevents.util.SpigotConversionUtil;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.block.Block;
-import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
-import org.bukkit.event.player.PlayerEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -31,6 +29,7 @@ public class BlockBreakModeStartEvent extends Event {
     private final @NotNull ItemStack protocolItem;
     private float blockHardness;
     private @NotNull CorrectToolChecker toolChecker;
+    private @NotNull BlockBreakMode blockBreakMode;
     public BlockBreakModeStartEvent(@NotNull ServerPlayer serverPlayer, @NotNull ServerLevel serverLevel, @NotNull PlayerInteractEvent interactEvent) {
         this.serverPlayer = serverPlayer;
         this.serverLevel = serverLevel;
@@ -40,6 +39,7 @@ public class BlockBreakModeStartEvent extends Event {
         this.itemStack = serverPlayer.getPlayer().getInventory().getItemInMainHand();
         this.protocolItem = SpigotConversionUtil.fromBukkitItemStack(itemStack);
         this.toolChecker = new CorrectToolChecker(this);
+        this.blockBreakMode = getInitBreakMode();
     }
 
     @Override
@@ -48,8 +48,13 @@ public class BlockBreakModeStartEvent extends Event {
     }
 
     @Contract("->new")
+<<<<<<< Updated upstream
     public BlockBreakMode getFinalBreakMode() {
         return new BlockBreakMode(serverPlayer, serverLevel, interactEvent, blockHardness, toolChecker);
+=======
+    public BlockBreakMode getInitBreakMode() {
+        return new BlockBreakMode(new BlockBreakContext(serverPlayer, serverLevel, interactEvent, blockHardness, toolChecker));
+>>>>>>> Stashed changes
     }
 
     public static @NotNull HandlerList getHandlerList() {
