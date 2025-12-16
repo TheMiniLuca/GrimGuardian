@@ -58,7 +58,7 @@ public class BukkitListener implements Listener {
             BlockBreakModeStartEvent startEvent = new BlockBreakModeStartEvent(serverPlayer, level, event);
             startEvent.callEvent();
 
-            BlockBreakMode mode = startEvent.getFinalBreakMode();
+            BlockBreakMode mode = startEvent.getBlockBreakMode();
             mode.run();
             BLOCK_BREAK_MODE_MAP.put(player.getUniqueId(), mode);
         }
